@@ -22,6 +22,7 @@
 
 package org.jboss.spring.deployers.as7;
 
+import org.jboss.as.server.deployment.AttachmentKey;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -44,7 +45,7 @@ public class SpringStructureProcessor implements DeploymentUnitProcessor {
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
-
+        
         ResourceRoot deploymentRoot = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT);
 
         if (deploymentRoot == null) {
@@ -64,6 +65,24 @@ public class SpringStructureProcessor implements DeploymentUnitProcessor {
             SpringDeployment springDeployment = new SpringDeployment(springContextLocations);
             springDeployment.attachTo(deploymentUnit);
         }
+        
+        try {
+			Class.forName("org.springframework.context.annotation.AnnotationConfigApplicationContext");
+			AttachmentKey<String> springVersion = AttachmentKey.create(String.class);
+			deploymentUnit.putAttachment(springVersion, "Spring3+");
+			System.out.println("Snowdrop has detected Spring 3.0.0 or up");
+		} catch (Exception e) {
+			try {
+				Class.forName("org.springframework.context.support.AbstractXmlApplicationContext");
+			} catch (ClassNotFoundException e1) {
+				//TODO: what to do if neither is installed (only warn or give error?), giving warning for now.
+				System.out.println("Snowdrop detected no spring module, make sure you have installed spring dependencies correctly");
+				return;
+			}
+			System.out.println("Snowdrop has detected Spring 2.5");
+			AttachmentKey<String> springVersion = AttachmentKey.create(String.class);
+			deploymentUnit.putAttachment(springVersion, "Spring2.5");
+		}
 
     }
 
