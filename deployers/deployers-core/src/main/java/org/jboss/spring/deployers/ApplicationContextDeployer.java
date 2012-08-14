@@ -23,6 +23,8 @@ package org.jboss.spring.deployers;
 
 import org.jboss.deployers.spi.deployer.helpers.DeploymentVisitor;
 import org.jboss.spring.factory.NamedXmlApplicationContext;
+import org.jboss.spring.vfs.VFSResource;
+import org.jboss.spring.vfs.context.VFSClassPathXmlApplicationContext;
 import org.springframework.context.ConfigurableApplicationContext;
 
 /**
@@ -35,7 +37,9 @@ public class ApplicationContextDeployer extends AbstractSpringMetaDataDeployer<C
     protected DeploymentVisitor<SpringMetaData> createDeploymentVisitor() {
         return new SpringDeploymentVisitor() {
             protected ConfigurableApplicationContext doCreate(SpringContextDescriptor metaData) {
-                return new NamedXmlApplicationContext(metaData.getDefaultName(), metaData.getResource());
+            	VFSClassPathXmlApplicationContext applicationContext = new VFSClassPathXmlApplicationContext(new String[]{}, false);
+                NamedXmlApplicationContext.initializeNameXml(applicationContext, new VFSResource(metaData.getResource()),metaData.getDefaultName());
+                return applicationContext;
             }
 
             protected void doClose(ConfigurableApplicationContext beanFactory) {

@@ -21,110 +21,285 @@
  */
 package org.jboss.spring.factory;
 
-import org.jboss.spring.vfs.context.VFSClassPathXmlApplicationContext;
+import java.io.IOException;
+import java.util.Locale;
+import java.util.Map;
+
 import org.jboss.util.naming.Util;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanDefinitionStoreException;
 import org.springframework.beans.factory.BeanFactory;
-import org.springframework.beans.factory.support.DefaultListableBeanFactory;
-import org.springframework.beans.factory.xml.ResourceEntityResolver;
-import org.springframework.beans.factory.xml.XmlBeanDefinitionReader;
+import org.springframework.beans.factory.NoSuchBeanDefinitionException;
+import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
+import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
+import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationEvent;
+import org.springframework.context.ApplicationListener;
+import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.context.MessageSourceResolvable;
+import org.springframework.context.NoSuchMessageException;
+import org.springframework.context.support.AbstractApplicationContext;
 import org.springframework.core.io.Resource;
 import org.springframework.util.StringUtils;
-import org.xml.sax.InputSource;
-
-import javax.xml.namespace.NamespaceContext;
-import javax.xml.xpath.XPath;
-import javax.xml.xpath.XPathFactory;
-
-import java.io.IOException;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * @author <a href="mailto:ales.justin@genera-lynx.com">Ales Justin</a>
  */
-public class NamedXmlApplicationContext extends VFSClassPathXmlApplicationContext implements Nameable {
 
-    private String defaultName;
+public class NamedXmlApplicationContext implements ConfigurableApplicationContext, Nameable {
+	
+	String defaultName;
+	
+	String name;
+	
+	ConfigurableApplicationContext context;
+	
+	public NamedXmlApplicationContext(ConfigurableApplicationContext context, String defaultName) {
+		this.defaultName = defaultName;
+		this.context = context;
+	}
+	
+	public void initializeName(String ... names) {
+		String name = names[0];
+		if (name == null || "".equals(StringUtils.trimAllWhitespace(name))) {
+			name = defaultName;
+			this.name = name;
+			((AbstractApplicationContext) context).setDisplayName(name);
+		}
+		if (names.length>1){
+			try {
+                this.context.getBeanFactory().setParentBeanFactory((BeanFactory) Util.lookup(names[1], BeanFactory.class));
+            } catch (Exception e) {
+                throw new BeanDefinitionStoreException("Failure during parent bean factory JNDI lookup: " + names[1], e);
+            }
+		}
+		context.refresh();
+	}
 
+	@Override
+	public String getId() {
+		return this.context.getId();
+	}
 
-    private String name;
-    private Resource resource;
+	@Override
+	public String getDisplayName() {
+		return this.context.getDisplayName();
+	}
 
-    public NamedXmlApplicationContext(String defaultName, Resource resource) throws BeansException {
-        this(defaultName, resource, true);
-    }
+	@Override
+	public long getStartupDate() {
+		return this.context.getStartupDate();
+	}
 
-    public NamedXmlApplicationContext(String defaultName, Resource resource, boolean refresh) throws BeansException {
-        //loading config from Resource
-        super(new String[]{}, false);
-        this.defaultName = defaultName;
-        this.resource = resource;
-        initializeNames(resource);
-        if (refresh) {
-            refresh();
-        }
-    }
+	@Override
+	public ApplicationContext getParent() {
+		return this.context.getParent();
+	}
 
-    @Override
-    protected void loadBeanDefinitions(XmlBeanDefinitionReader reader) throws BeansException, IOException {
-        reader.loadBeanDefinitions(this.resource);
-    }
+	@Override
+	public AutowireCapableBeanFactory getAutowireCapableBeanFactory()
+			throws IllegalStateException {
+		return this.context.getAutowireCapableBeanFactory();
+	}
 
-    public String getName() {
-        String name = this.name != null? this.name : defaultName;
+	@Override
+	public boolean containsBeanDefinition(String beanName) {
+		return this.context.containsBeanDefinition(beanName);
+	}
+
+	@Override
+	public int getBeanDefinitionCount() {
+		return this.context.getBeanDefinitionCount();
+	}
+
+	@Override
+	public String[] getBeanDefinitionNames() {
+		return this.context.getBeanDefinitionNames();
+	}
+
+	@Override
+	public String[] getBeanNamesForType(Class type) {
+		return this.context.getBeanNamesForType(type);
+	}
+
+	@Override
+	public String[] getBeanNamesForType(Class type,
+			boolean includeNonSingletons, boolean allowEagerInit) {
+		return this.context.getBeanNamesForType(type, includeNonSingletons, allowEagerInit);
+	}
+
+	@Override
+	public Map getBeansOfType(Class type) throws BeansException {
+		return this.context.getBeansOfType(type);
+	}
+
+	@Override
+	public Map getBeansOfType(Class type, boolean includeNonSingletons,
+			boolean allowEagerInit) throws BeansException {
+		return this.context.getBeansOfType(type, includeNonSingletons, allowEagerInit);
+	}
+
+	@Override
+	public Object getBean(String name) throws BeansException {
+		return this.context.getBean(name);
+	}
+
+	@Override
+	public Object getBean(String name, Class requiredType)
+			throws BeansException {
+		return this.context.getBean(name, requiredType);
+	}
+
+	@Override
+	public Object getBean(String name, Object[] args) throws BeansException {
+		return this.context.getBean(name, args);
+	}
+
+	@Override
+	public boolean containsBean(String name) {
+		return this.context.containsBean(name);
+	}
+
+	@Override
+	public boolean isSingleton(String name)
+			throws NoSuchBeanDefinitionException {
+		return this.context.isSingleton(name);
+	}
+
+	@Override
+	public boolean isPrototype(String name)
+			throws NoSuchBeanDefinitionException {
+		return this.context.isPrototype(name);
+	}
+
+	@Override
+	public boolean isTypeMatch(String name, Class targetType)
+			throws NoSuchBeanDefinitionException {
+		return this.context.isTypeMatch(name, targetType);
+	}
+
+	@Override
+	public Class getType(String name) throws NoSuchBeanDefinitionException {
+		return this.context.getType(name);
+	}
+
+	@Override
+	public String[] getAliases(String name) {
+		return this.context.getAliases(name);
+	}
+
+	@Override
+	public BeanFactory getParentBeanFactory() {
+		return this.context.getParentBeanFactory();
+	}
+
+	@Override
+	public boolean containsLocalBean(String name) {
+		return this.context.containsLocalBean(name);
+	}
+
+	@Override
+	public String getMessage(String code, Object[] args, String defaultMessage,
+			Locale locale) {
+		return this.context.getMessage(code, args, defaultMessage, locale);
+	}
+
+	@Override
+	public String getMessage(String code, Object[] args, Locale locale)
+			throws NoSuchMessageException {
+		return this.context.getMessage(code, args, locale);
+	}
+
+	@Override
+	public String getMessage(MessageSourceResolvable resolvable, Locale locale)
+			throws NoSuchMessageException {
+		return this.context.getMessage(resolvable, locale);
+	}
+
+	@Override
+	public void publishEvent(ApplicationEvent event) {
+		this.context.publishEvent(event);
+	}
+
+	@Override
+	public Resource[] getResources(String arg0) throws IOException {
+		return this.context.getResources(arg0);
+	}
+
+	@Override
+	public ClassLoader getClassLoader() {
+		return this.context.getClassLoader();
+	}
+
+	@Override
+	public Resource getResource(String arg0) {
+		return this.context.getResource(arg0);
+	}
+
+	@Override
+	public void start() {
+		this.context.start();
+	}
+
+	@Override
+	public void stop() {
+		this.context.stop();
+	}
+
+	@Override
+	public boolean isRunning() {
+		return this.context.isRunning();
+	}
+
+	@Override
+	public void setParent(ApplicationContext parent) {
+		this.context.setParent(parent);
+	}
+
+	@Override
+	public void addBeanFactoryPostProcessor(
+			BeanFactoryPostProcessor beanFactoryPostProcessor) {
+		this.context.addBeanFactoryPostProcessor(beanFactoryPostProcessor);
+	}
+
+	@Override
+	public void addApplicationListener(ApplicationListener listener) {
+		this.context.addApplicationListener(listener);
+	}
+
+	@Override
+	public void refresh() throws BeansException, IllegalStateException {
+		this.context.refresh();
+	}
+
+	@Override
+	public void registerShutdownHook() {
+		this.context.registerShutdownHook();
+	}
+
+	@Override
+	public void close() {
+		this.context.close();
+	}
+
+	@Override
+	public boolean isActive() {
+		return this.context.isActive();
+	}
+
+	@Override
+	public ConfigurableListableBeanFactory getBeanFactory()
+			throws IllegalStateException {
+		return this.context.getBeanFactory();
+	}
+
+	@Override
+	public String getName() {
+		String name = this.name != null? this.name : defaultName;
         if (name == null) {
             throw new IllegalArgumentException("Bean factory JNDI name must be set!");
         }
         return name;
-    }
-
-    private void initializeNames(Resource resource) {
-        try {
-            XPath xPath = XPathFactory.newInstance().newXPath();
-            xPath.setNamespaceContext(new NamespaceContext() {
-                @Override
-                public String getNamespaceURI(String prefix) {
-                    return "http://www.springframework.org/schema/beans";
-                }
-
-                @Override
-                public String getPrefix(String namespaceURI) {
-                    return "beans";
-                }
-
-                @Override
-                public Iterator getPrefixes(String namespaceURI) {
-                    return Collections.singleton("beans").iterator();
-                }
-            });
-            String expression = "/beans:beans/beans:description";
-            InputSource inputSource = new InputSource(resource.getInputStream());
-            String description = xPath.evaluate(expression, inputSource);
-            if (description != null) {
-                Matcher bfm = Pattern.compile(Constants.BEAN_FACTORY_ELEMENT).matcher(description);
-                if (bfm.find()) {
-                    this.name = bfm.group(1);
-                }
-                Matcher pbfm = Pattern.compile(Constants.PARENT_BEAN_FACTORY_ELEMENT).matcher(description);
-                if (pbfm.find()) {
-                    String parentName = pbfm.group(1);
-                    try {
-                        this.getBeanFactory().setParentBeanFactory((BeanFactory) Util.lookup(parentName, BeanFactory.class));
-                    } catch (Exception e) {
-                        throw new BeanDefinitionStoreException("Failure during parent bean factory JNDI lookup: " + parentName, e);
-                    }
-                }
-            }
-            if (this.name == null || "".equals(StringUtils.trimAllWhitespace(this.name))) {
-                this.name = this.defaultName;
-            }
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
+	}    
 }

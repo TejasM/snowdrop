@@ -75,7 +75,7 @@ public class VFSClassPathXmlApplicationContext extends ClassPathXmlApplicationCo
 
     public VFSClassPathXmlApplicationContext(String[] paths, Class clazz, ApplicationContext parent) throws BeansException {
         super(paths, clazz, parent);
-    }
+    }    
 
     protected ResourcePatternResolver getResourcePatternResolver() {
         return new VFSResourcePatternResolver(new VFSResourceLoader(getClassLoader()));

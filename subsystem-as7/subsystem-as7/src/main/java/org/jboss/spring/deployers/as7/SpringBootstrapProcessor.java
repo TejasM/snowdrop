@@ -39,7 +39,9 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.spring.factory.NamedXmlApplicationContext;
+import org.jboss.spring.util.XmlJndiParse;
 import org.jboss.spring.vfs.VFSResource;
+import org.jboss.spring.vfs.context.VFSClassPathXmlApplicationContext;
 import org.jboss.vfs.VirtualFile;
 import org.springframework.context.ApplicationContext;
 
@@ -62,7 +64,7 @@ public class SpringBootstrapProcessor implements DeploymentUnitProcessor {
         for (VirtualFile virtualFile : locations.getContextDefinitionLocations()) {
 
             final EEModuleDescription moduleDescription = phaseContext.getDeploymentUnit() .getAttachment(org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION);
-            NamedXmlApplicationContext applicationContext;
+            VFSClassPathXmlApplicationContext applicationContext;
             ClassLoader cl = Thread.currentThread().getContextClassLoader();
             boolean hasNamespaceContextSelector = moduleDescription != null && moduleDescription.getNamespaceContextSelector() != null;
             try {
@@ -70,8 +72,10 @@ public class SpringBootstrapProcessor implements DeploymentUnitProcessor {
                 if (hasNamespaceContextSelector) {
                     NamespaceContextSelector.pushCurrentSelector(moduleDescription.getNamespaceContextSelector());
                 }
-                applicationContext = new NamedXmlApplicationContext(phaseContext.getDeploymentUnit().getName(), new VFSResource(virtualFile));
-                applicationContext.getName();
+                applicationContext = new VFSClassPathXmlApplicationContext(new String[]{}, false);
+                NamedXmlApplicationContext namedContext = new NamedXmlApplicationContext(applicationContext, phaseContext.getDeploymentUnit().getName());
+                namedContext.initializeName(XmlJndiParse.getJndiName(new VFSResource(virtualFile)));
+                namedContext.getName();
             } finally {
                 Thread.currentThread().setContextClassLoader(cl);
                 if (hasNamespaceContextSelector) {
@@ -79,10 +83,10 @@ public class SpringBootstrapProcessor implements DeploymentUnitProcessor {
                 }
             }
             ApplicationContextService service = new ApplicationContextService(applicationContext);
-            ServiceName serviceName = phaseContext.getDeploymentUnit().getServiceName().append(applicationContext.getName());
+            ServiceName serviceName = phaseContext.getDeploymentUnit().getServiceName().append(applicationContext.getDisplayName());
             ServiceBuilder<?> serviceBuilder = serviceTarget.addService(serviceName, service);
             serviceBuilder.install();
-            String jndiName = JndiName.of("java:jboss").append(applicationContext.getName()).getAbsoluteName();
+            String jndiName = JndiName.of("java:jboss").append(applicationContext.getDisplayName()).getAbsoluteName();
             int index = jndiName.indexOf("/");
             String namespace = (index > 5) ? jndiName.substring(5, index) : null;
             String binding = (index > 5) ? jndiName.substring(index + 1) : jndiName.substring(5);
