@@ -55,6 +55,10 @@ public class SpringBootstrapProcessor implements DeploymentUnitProcessor {
         if (locations == null) {
             return;
         }
+        String springVersion = locations.getSpringVersion();
+        if(springVersion.equals("3.0+")){
+        	//TODO: Check if annotation application context should be created
+        }
         for (VirtualFile virtualFile : locations.getContextDefinitionLocations()) {
 
             final EEModuleDescription moduleDescription = phaseContext.getDeploymentUnit() .getAttachment(org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION);

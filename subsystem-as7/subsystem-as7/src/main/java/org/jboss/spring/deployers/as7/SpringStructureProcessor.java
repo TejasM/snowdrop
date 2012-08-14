@@ -22,7 +22,9 @@
 
 package org.jboss.spring.deployers.as7;
 
-import org.jboss.as.server.deployment.AttachmentKey;
+import java.util.HashSet;
+import java.util.Set;
+
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -31,9 +33,6 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.logging.Logger;
 import org.jboss.vfs.VirtualFile;
-
-import java.util.HashSet;
-import java.util.Set;
 
 /**
  * @author Marius Bogoevici
@@ -61,27 +60,26 @@ public class SpringStructureProcessor implements DeploymentUnitProcessor {
             }
         }
 
-        if (!springContextLocations.isEmpty()) {
-            SpringDeployment springDeployment = new SpringDeployment(springContextLocations);
-            springDeployment.attachTo(deploymentUnit);
-        }
-        
-        try {
-			Class.forName("org.springframework.context.annotation.AnnotationConfigApplicationContext");
-			AttachmentKey<String> springVersion = AttachmentKey.create(String.class);
-			deploymentUnit.putAttachment(springVersion, "Spring3+");
-			System.out.println("Snowdrop has detected Spring 3.0.0 or up");
-		} catch (Exception e) {
+		if (!springContextLocations.isEmpty()) {
+			SpringDeployment springDeployment = new SpringDeployment(
+					springContextLocations);
+			springDeployment.attachTo(deploymentUnit);
 			try {
-				Class.forName("org.springframework.context.support.AbstractXmlApplicationContext");
-			} catch (ClassNotFoundException e1) {
-				//TODO: what to do if neither is installed (only warn or give error?), giving warning for now.
-				System.out.println("Snowdrop detected no spring module, make sure you have installed spring dependencies correctly");
-				return;
+				Class.forName("org.springframework.context.annotation.AnnotationConfigApplicationContext");
+				springDeployment.setSpringVersion("3.0+");
+			} catch (Exception e) {
+				try {
+					Class.forName("org.springframework.context.support.AbstractXmlApplicationContext");
+				} catch (ClassNotFoundException e1) {
+					// TODO: what to do if neither is installed (only warn or
+					// give error?), giving warning for now.
+					System.out
+							.println("Snowdrop detected no spring module, make sure you have installed spring dependencies correctly");
+					return;
+				}
+				springDeployment.setSpringVersion("2.5");
+
 			}
-			System.out.println("Snowdrop has detected Spring 2.5");
-			AttachmentKey<String> springVersion = AttachmentKey.create(String.class);
-			deploymentUnit.putAttachment(springVersion, "Spring2.5");
 		}
 
     }

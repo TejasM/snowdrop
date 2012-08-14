@@ -22,14 +22,13 @@
 
 package org.jboss.spring.deployers.as7;
 
-import org.jboss.as.server.deployment.AttachmentKey;
-import org.jboss.as.server.deployment.DeploymentUnit;
-import org.jboss.modules.Module;
-import org.jboss.vfs.VirtualFile;
-
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+
+import org.jboss.as.server.deployment.AttachmentKey;
+import org.jboss.as.server.deployment.DeploymentUnit;
+import org.jboss.vfs.VirtualFile;
 
 /**
  * @author Marius Bogoevici
@@ -37,7 +36,9 @@ import java.util.Set;
 public class SpringDeployment {
 
     public static final AttachmentKey<SpringDeployment> ATTACHMENT_KEY = AttachmentKey.create(SpringDeployment.class);
-
+    
+    private String springVersion;
+    
     private Set<VirtualFile> contextDefinitionLocations = new HashSet<VirtualFile>();
 
 
@@ -56,4 +57,12 @@ public class SpringDeployment {
     public static SpringDeployment retrieveFrom(DeploymentUnit deploymentUnit) {
         return deploymentUnit.getAttachment(ATTACHMENT_KEY);
     }
+
+	public String getSpringVersion() {
+		return springVersion;
+	}
+
+	public void setSpringVersion(String springVersion) {
+		this.springVersion = springVersion;
+	}
 }
