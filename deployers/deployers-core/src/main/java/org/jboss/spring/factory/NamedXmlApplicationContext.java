@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.util.Locale;
 import java.util.Map;
 
+import org.jboss.spring.vfs.context.VFSClassPathXmlApplicationContext;
 import org.jboss.util.naming.Util;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanDefinitionStoreException;
@@ -49,11 +50,13 @@ import org.springframework.util.StringUtils;
 
 public class NamedXmlApplicationContext implements ConfigurableApplicationContext, Nameable {
 	
-	String defaultName;
+	private String defaultName;
 	
-	String name;
+	private String name;
 	
-	ConfigurableApplicationContext context;
+	private ConfigurableApplicationContext context;
+	
+	private Resource resource;
 	
 	public NamedXmlApplicationContext(ConfigurableApplicationContext context, String defaultName) {
 		this.defaultName = defaultName;
@@ -63,10 +66,10 @@ public class NamedXmlApplicationContext implements ConfigurableApplicationContex
 	public void initializeName(String ... names) {
 		String name = names[0];
 		if (name == null || "".equals(StringUtils.trimAllWhitespace(name))) {
-			name = defaultName;
-			this.name = name;
+			name = defaultName;			
 			((AbstractApplicationContext) context).setDisplayName(name);
 		}
+		this.name = name;
 		if (names.length>1){
 			try {
                 this.context.getBeanFactory().setParentBeanFactory((BeanFactory) Util.lookup(names[1], BeanFactory.class));
@@ -74,6 +77,7 @@ public class NamedXmlApplicationContext implements ConfigurableApplicationContex
                 throw new BeanDefinitionStoreException("Failure during parent bean factory JNDI lookup: " + names[1], e);
             }
 		}
+		((AbstractApplicationContext) context).setDisplayName(name);
 		context.refresh();
 	}
 

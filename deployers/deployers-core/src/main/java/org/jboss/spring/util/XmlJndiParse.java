@@ -13,8 +13,9 @@ import org.jboss.spring.factory.Constants;
 import org.springframework.core.io.Resource;
 import org.xml.sax.InputSource;
 
-public class XmlJndiParse {
-	public static String[] getJndiName(Resource resource){
+public class XmlJndiParse implements JndiParse {
+	@Override
+	public String[] getJndiName(Resource resource){
 		String name = null;
 		String parentName = null;
 		try {
@@ -35,7 +36,7 @@ public class XmlJndiParse {
                     return Collections.singleton("beans").iterator();
                 }
             });
-            String expression = "/beans:beans/beans:description";
+            String expression = "/beans/description";
             InputSource inputSource = new InputSource(resource.getInputStream());
             String description = xPath.evaluate(expression, inputSource);
             

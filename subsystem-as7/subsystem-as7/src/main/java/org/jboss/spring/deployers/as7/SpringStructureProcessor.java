@@ -58,8 +58,26 @@ public class SpringStructureProcessor implements DeploymentUnitProcessor {
                 springContextLocations.add(child);
                 log.debug("Found:" + child.getPathName());
             }
+            if (child.getName().endsWith("-spring.properties")) {
+                springContextLocations.add(child);
+                log.debug("Found:" + child.getPathName());
+            }
         }
-
+        
+        metaInf = deploymentRoot.getRoot().getChild("WEB-INF/classes/META-INF");
+		if (metaInf != null) {
+			for (VirtualFile child : metaInf.getChildren()) {
+				if (child.getName().endsWith("-spring.xml")) {
+					springContextLocations.add(child);
+					log.debug("Found:" + child.getPathName());
+				}
+				if (child.getName().endsWith("-spring.properties")) {
+					springContextLocations.add(child);
+					log.debug("Found:" + child.getPathName());
+				}
+			}
+		}
+        
 		if (!springContextLocations.isEmpty()) {
 			SpringDeployment springDeployment = new SpringDeployment(
 					springContextLocations);

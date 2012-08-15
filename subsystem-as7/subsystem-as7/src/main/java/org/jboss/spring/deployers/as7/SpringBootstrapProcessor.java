@@ -22,6 +22,8 @@
 
 package org.jboss.spring.deployers.as7;
 
+import java.lang.reflect.Constructor;
+
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.naming.ServiceBasedNamingStore;
 import org.jboss.as.naming.ValueManagedReferenceFactory;
@@ -39,18 +41,24 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.spring.factory.NamedXmlApplicationContext;
+import org.jboss.spring.util.BasePackageParserImpl;
+import org.jboss.spring.util.JndiParse;
+import org.jboss.spring.util.PropsJndiParse;
 import org.jboss.spring.util.XmlJndiParse;
 import org.jboss.spring.vfs.VFSResource;
 import org.jboss.spring.vfs.context.VFSClassPathXmlApplicationContext;
 import org.jboss.vfs.VirtualFile;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 /**
  * @author Marius Bogoevici
  */
 public class SpringBootstrapProcessor implements DeploymentUnitProcessor {
 
-    @Override
+    @SuppressWarnings("rawtypes")
+	@Override
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         ServiceTarget serviceTarget = phaseContext.getServiceTarget();
         SpringDeployment locations = SpringDeployment.retrieveFrom(phaseContext.getDeploymentUnit());
@@ -58,13 +66,13 @@ public class SpringBootstrapProcessor implements DeploymentUnitProcessor {
             return;
         }
         String springVersion = locations.getSpringVersion();
-        if(springVersion.equals("3.0+")){
-        	//TODO: Check if annotation application context should be created
-        }
+        String internalJndiName = null;
+        JndiParse xmlParser = new XmlJndiParse();
+        JndiParse propsParser = new PropsJndiParse();
         for (VirtualFile virtualFile : locations.getContextDefinitionLocations()) {
 
             final EEModuleDescription moduleDescription = phaseContext.getDeploymentUnit() .getAttachment(org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION);
-            VFSClassPathXmlApplicationContext applicationContext;
+            ConfigurableApplicationContext applicationContext;
             ClassLoader cl = Thread.currentThread().getContextClassLoader();
             boolean hasNamespaceContextSelector = moduleDescription != null && moduleDescription.getNamespaceContextSelector() != null;
             try {
@@ -72,10 +80,56 @@ public class SpringBootstrapProcessor implements DeploymentUnitProcessor {
                 if (hasNamespaceContextSelector) {
                     NamespaceContextSelector.pushCurrentSelector(moduleDescription.getNamespaceContextSelector());
                 }
-                applicationContext = new VFSClassPathXmlApplicationContext(new String[]{}, false);
-                NamedXmlApplicationContext namedContext = new NamedXmlApplicationContext(applicationContext, phaseContext.getDeploymentUnit().getName());
-                namedContext.initializeName(XmlJndiParse.getJndiName(new VFSResource(virtualFile)));
-                namedContext.getName();
+                NamedXmlApplicationContext namedContext = null; 
+				if (virtualFile.getPathName().endsWith(".xml")) {
+					if (springVersion.equals("3.0+")) {
+						applicationContext = new ClassPathXmlApplicationContext(
+								new String[] {}, false);
+					} else {
+						applicationContext = new VFSClassPathXmlApplicationContext(
+								new String[] {}, false);
+						((VFSClassPathXmlApplicationContext) applicationContext).setResource(new VFSResource(virtualFile));
+					}
+					namedContext = new NamedXmlApplicationContext(
+							applicationContext, phaseContext
+									.getDeploymentUnit().getName());
+					namedContext.initializeName(xmlParser
+							.getJndiName(new VFSResource(virtualFile)));
+				} else {
+					// TODO: Add Support for Annotation Application Context: add
+					// cglib to the snowdrop module (need make sure this works)
+					if (springVersion.equals("3.0+")) {
+						try {
+							Class annotationApplicationContext = Class
+									.forName("org.springframework.context.annotation.AnnotationConfigApplicationContext");
+							Constructor ct = annotationApplicationContext
+									.getConstructors()[1];
+							String[] basePackages = (new BasePackageParserImpl())
+									.parseBasePackages(new VFSResource(
+											virtualFile));
+							Class[] baseClasses = new Class[]{};
+							int i = 0;
+							for (String string : basePackages) {
+								baseClasses[i] = Class.forName(string);
+								i++;
+							}							
+							applicationContext = ((ConfigurableApplicationContext) ct
+									.newInstance(baseClasses));							
+							namedContext = new NamedXmlApplicationContext(
+									applicationContext, phaseContext
+											.getDeploymentUnit().getName());
+							namedContext.initializeName(propsParser
+									.getJndiName(new VFSResource(virtualFile)));
+
+						} catch (Throwable e) {
+							throw new RuntimeException();
+						}
+					} else {
+						continue;
+					}
+
+				}          
+                internalJndiName = namedContext.getName();
             } finally {
                 Thread.currentThread().setContextClassLoader(cl);
                 if (hasNamespaceContextSelector) {
@@ -83,10 +137,10 @@ public class SpringBootstrapProcessor implements DeploymentUnitProcessor {
                 }
             }
             ApplicationContextService service = new ApplicationContextService(applicationContext);
-            ServiceName serviceName = phaseContext.getDeploymentUnit().getServiceName().append(applicationContext.getDisplayName());
+            ServiceName serviceName = phaseContext.getDeploymentUnit().getServiceName().append(internalJndiName);
             ServiceBuilder<?> serviceBuilder = serviceTarget.addService(serviceName, service);
             serviceBuilder.install();
-            String jndiName = JndiName.of("java:jboss").append(applicationContext.getDisplayName()).getAbsoluteName();
+            String jndiName = JndiName.of("java:jboss").append(internalJndiName).getAbsoluteName();
             int index = jndiName.indexOf("/");
             String namespace = (index > 5) ? jndiName.substring(5, index) : null;
             String binding = (index > 5) ? jndiName.substring(index + 1) : jndiName.substring(5);
