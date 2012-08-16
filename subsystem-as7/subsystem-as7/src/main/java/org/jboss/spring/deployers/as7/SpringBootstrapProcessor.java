@@ -48,9 +48,14 @@ import org.jboss.spring.util.XmlJndiParse;
 import org.jboss.spring.vfs.VFSResource;
 import org.jboss.spring.vfs.context.VFSClassPathXmlApplicationContext;
 import org.jboss.vfs.VirtualFile;
+import org.springframework.beans.factory.support.DefaultListableBeanFactory;
+import org.springframework.beans.factory.xml.XmlBeanFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
+import org.springframework.context.support.GenericApplicationContext;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.Resource;
 
 /**
  * @author Marius Bogoevici
@@ -82,9 +87,9 @@ public class SpringBootstrapProcessor implements DeploymentUnitProcessor {
                 }
                 NamedXmlApplicationContext namedContext = null; 
 				if (virtualFile.getPathName().endsWith(".xml")) {
-					if (springVersion.equals("3.0+")) {
-						applicationContext = new ClassPathXmlApplicationContext(
-								new String[] {}, false);
+					if (springVersion.equals("3.0+")) {						
+						XmlBeanFactory beanFactory = new XmlBeanFactory(new VFSResource(virtualFile));
+						applicationContext = new GenericApplicationContext(beanFactory);
 					} else {
 						applicationContext = new VFSClassPathXmlApplicationContext(
 								new String[] {}, false);
@@ -130,7 +135,9 @@ public class SpringBootstrapProcessor implements DeploymentUnitProcessor {
 
 				}          
                 internalJndiName = namedContext.getName();
-            } finally {
+            }catch (Exception e) {
+				throw new RuntimeException();
+			} finally {
                 Thread.currentThread().setContextClassLoader(cl);
                 if (hasNamespaceContextSelector) {
                     NamespaceContextSelector.popCurrentSelector();
