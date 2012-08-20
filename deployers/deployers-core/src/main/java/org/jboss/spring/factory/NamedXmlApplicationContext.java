@@ -56,8 +56,6 @@ public class NamedXmlApplicationContext implements ConfigurableApplicationContex
 	
 	private ConfigurableApplicationContext context;
 	
-	private Resource resource;
-	
 	public NamedXmlApplicationContext(ConfigurableApplicationContext context, String defaultName) {
 		this.defaultName = defaultName;
 		this.context = context;

@@ -44,7 +44,7 @@ import org.springframework.util.ReflectionUtils;
 public class SpringDependencyProcessor implements DeploymentUnitProcessor {
 
     private static final ModuleIdentifier MODULE_IDENTIFIER_SNOWDROP = ModuleIdentifier.create("org.jboss.snowdrop");
-
+    
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
@@ -57,9 +57,8 @@ public class SpringDependencyProcessor implements DeploymentUnitProcessor {
 
         ModuleSpecification moduleSpecification = deploymentUnit.getAttachment(Attachments.MODULE_SPECIFICATION);
 
-
         addDependency(MODULE_IDENTIFIER_SNOWDROP, moduleSpecification);
-
+    
         deploymentUnit.addToAttachmentList(Attachments.ADDITIONAL_ANNOTATION_INDEXES, MODULE_IDENTIFIER_SNOWDROP);
     }
 

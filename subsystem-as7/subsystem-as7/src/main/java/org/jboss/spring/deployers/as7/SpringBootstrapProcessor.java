@@ -23,6 +23,7 @@
 package org.jboss.spring.deployers.as7;
 
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Method;
 
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.naming.ServiceBasedNamingStore;
@@ -52,6 +53,7 @@ import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.beans.factory.xml.XmlBeanFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.context.support.GenericApplicationContext;
 import org.springframework.core.io.ClassPathResource;
@@ -105,21 +107,20 @@ public class SpringBootstrapProcessor implements DeploymentUnitProcessor {
 					// cglib to the snowdrop module (need make sure this works)
 					if (springVersion.equals("3.0+")) {
 						try {
-							Class annotationApplicationContext = Class
+							/*Class annotationApplicationContext = Class
 									.forName("org.springframework.context.annotation.AnnotationConfigApplicationContext");
 							Constructor ct = annotationApplicationContext
-									.getConstructors()[1];
+									.getConstructor();
+							applicationContext = (ConfigurableApplicationContext) ct.newInstance();
 							String[] basePackages = (new BasePackageParserImpl())
 									.parseBasePackages(new VFSResource(
-											virtualFile));
-							Class[] baseClasses = new Class[]{};
-							int i = 0;
-							for (String string : basePackages) {
-								baseClasses[i] = Class.forName(string);
-								i++;
-							}							
-							applicationContext = ((ConfigurableApplicationContext) ct
-									.newInstance(baseClasses));							
+											virtualFile));						
+							Method methodScan = annotationApplicationContext.getDeclaredMethod("scan", String[].class);
+							methodScan.invoke(applicationContext, basePackages);*/
+							String[] basePackages = (new BasePackageParserImpl())
+									.parseBasePackages(new VFSResource(
+											virtualFile));					
+							applicationContext= new AnnotationConfigApplicationContext(basePackages);
 							namedContext = new NamedXmlApplicationContext(
 									applicationContext, phaseContext
 											.getDeploymentUnit().getName());
@@ -127,6 +128,7 @@ public class SpringBootstrapProcessor implements DeploymentUnitProcessor {
 									.getJndiName(new VFSResource(virtualFile)));
 
 						} catch (Throwable e) {
+							e.printStackTrace();
 							throw new RuntimeException();
 						}
 					} else {

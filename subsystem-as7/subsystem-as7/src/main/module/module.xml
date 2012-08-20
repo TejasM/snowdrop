@@ -73,6 +73,17 @@
                 <include path="org**"/>
             </imports>
         </module>
+        
+         <module name="cglib.cglib-nodep" slot="main">
+            <exports>
+                <include path="META-INF**"/>
+                <include path="cglib**"/>
+            </exports>
+            <imports>
+                <include path="META-INF**"/>
+                <include path="cglib**"/>
+            </imports>
+        </module>
 
     </dependencies>
 </module>
