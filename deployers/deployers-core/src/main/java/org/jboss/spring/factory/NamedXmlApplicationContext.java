@@ -25,7 +25,6 @@ import java.io.IOException;
 import java.util.Locale;
 import java.util.Map;
 
-import org.jboss.spring.vfs.context.VFSClassPathXmlApplicationContext;
 import org.jboss.util.naming.Util;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanDefinitionStoreException;
@@ -303,5 +302,5 @@ public class NamedXmlApplicationContext implements ConfigurableApplicationContex
             throw new IllegalArgumentException("Bean factory JNDI name must be set!");
         }
         return name;
-	}    
+	}
 }

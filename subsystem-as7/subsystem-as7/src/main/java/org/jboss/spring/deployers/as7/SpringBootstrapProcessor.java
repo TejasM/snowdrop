@@ -49,15 +49,10 @@ import org.jboss.spring.util.XmlJndiParse;
 import org.jboss.spring.vfs.VFSResource;
 import org.jboss.spring.vfs.context.VFSClassPathXmlApplicationContext;
 import org.jboss.vfs.VirtualFile;
-import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.beans.factory.xml.XmlBeanFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ConfigurableApplicationContext;
-import org.springframework.context.annotation.AnnotationConfigApplicationContext;
-import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.context.support.GenericApplicationContext;
-import org.springframework.core.io.ClassPathResource;
-import org.springframework.core.io.Resource;
 
 /**
  * @author Marius Bogoevici
@@ -107,7 +102,10 @@ public class SpringBootstrapProcessor implements DeploymentUnitProcessor {
 					// cglib to the snowdrop module (need make sure this works)
 					if (springVersion.equals("3.0+")) {
 						try {
-							/*Class annotationApplicationContext = Class
+							/*
+							 * Reflection for AnnotationApplicationContext
+							 */
+							Class annotationApplicationContext = Class
 									.forName("org.springframework.context.annotation.AnnotationConfigApplicationContext");
 							Constructor ct = annotationApplicationContext
 									.getConstructor();
@@ -116,11 +114,8 @@ public class SpringBootstrapProcessor implements DeploymentUnitProcessor {
 									.parseBasePackages(new VFSResource(
 											virtualFile));						
 							Method methodScan = annotationApplicationContext.getDeclaredMethod("scan", String[].class);
-							methodScan.invoke(applicationContext, basePackages);*/
-							String[] basePackages = (new BasePackageParserImpl())
-									.parseBasePackages(new VFSResource(
-											virtualFile));					
-							applicationContext= new AnnotationConfigApplicationContext(basePackages);
+							methodScan.invoke(annotationApplicationContext.cast(applicationContext), new Object[]{basePackages});
+
 							namedContext = new NamedXmlApplicationContext(
 									applicationContext, phaseContext
 											.getDeploymentUnit().getName());
