@@ -42,6 +42,7 @@ import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.common.CommonDescriptions;
+import org.jboss.as.controller.parsing.Element;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.parsing.ParseUtils;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
@@ -111,7 +112,14 @@ public class SpringExtension implements Extension {
         @Override
         public void readElement(XMLExtendedStreamReader reader, List<ModelNode> list) throws XMLStreamException {
             ParseUtils.requireNoAttributes(reader);
-            ParseUtils.requireNoContent(reader);
+            try{
+				ParseUtils.nextElement(reader);
+				SpringDeployment.setXmlApplicationContext(reader.getElementText());
+				reader.nextTag();
+            } catch(Exception e) {
+            	ParseUtils.requireNoContent(reader);
+				SpringDeployment.setXmlApplicationContext("org.springframework.context.support.ClassPathXmlApplicationContext");
+            }            
             final ModelNode update = new ModelNode();
             update.get(OP).set(ADD);
             update.get(OP_ADDR).add(SUBSYSTEM, SUBSYSTEM_NAME);

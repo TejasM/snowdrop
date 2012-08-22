@@ -70,7 +70,6 @@
         <dependency>
         	<groupId>cglib</groupId>
         	<artifactId>cglib-nodep</artifactId>
-        	<scope>import</scope>
         </dependency>
     </dependencies>
 

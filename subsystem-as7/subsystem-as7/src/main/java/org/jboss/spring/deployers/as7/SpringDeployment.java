@@ -37,6 +37,8 @@ public class SpringDeployment {
 
     public static final AttachmentKey<SpringDeployment> ATTACHMENT_KEY = AttachmentKey.create(SpringDeployment.class);
     
+    private static String xmlApplicationContext;
+    
     private String springVersion;
     
     private Set<VirtualFile> contextDefinitionLocations = new HashSet<VirtualFile>();
@@ -64,5 +66,13 @@ public class SpringDeployment {
 
 	public void setSpringVersion(String springVersion) {
 		this.springVersion = springVersion;
+	}
+
+	public static String getXmlApplicationContext() {
+		return xmlApplicationContext;
+	}
+
+	public static void setXmlApplicationContext(String xmlApplicationContext) {
+		SpringDeployment.xmlApplicationContext = xmlApplicationContext;
 	}
 }
