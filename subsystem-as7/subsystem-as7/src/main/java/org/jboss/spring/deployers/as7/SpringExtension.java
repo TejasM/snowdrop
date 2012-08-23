@@ -114,11 +114,13 @@ public class SpringExtension implements Extension {
             ParseUtils.requireNoAttributes(reader);
             try{
 				ParseUtils.nextElement(reader);
-				SpringDeployment.setXmlApplicationContext(reader.getElementText());
-				reader.nextTag();
+				SpringDeployment.xmlApplicationContext = reader.getElementText();				
+				ParseUtils.requireNoContent(reader);
+				System.out.println("Got XmlApplicationContext to be: " + SpringDeployment.xmlApplicationContext);
             } catch(Exception e) {
+            	e.printStackTrace();
+				System.out.println("Didn't find XmlApplicationContext Element");
             	ParseUtils.requireNoContent(reader);
-				SpringDeployment.setXmlApplicationContext("org.springframework.context.support.ClassPathXmlApplicationContext");
             }            
             final ModelNode update = new ModelNode();
             update.get(OP).set(ADD);

@@ -22,7 +22,7 @@
 package org.jboss.spring.deployers;
 
 import org.jboss.deployers.spi.deployer.helpers.DeploymentVisitor;
-import org.jboss.spring.factory.NamedXmlApplicationContext;
+import org.jboss.spring.factory.NamedApplicationContext;
 import org.jboss.spring.util.JndiParse;
 import org.jboss.spring.util.XmlJndiParse;
 import org.jboss.spring.vfs.VFSResource;
@@ -40,7 +40,7 @@ public class ApplicationContextDeployer extends AbstractSpringMetaDataDeployer<C
         return new SpringDeploymentVisitor() {
             protected ConfigurableApplicationContext doCreate(SpringContextDescriptor metaData) {
             	VFSClassPathXmlApplicationContext applicationContext = new VFSClassPathXmlApplicationContext(new String[]{}, false);
-                NamedXmlApplicationContext namedContext = new NamedXmlApplicationContext(applicationContext, metaData.getDefaultName());
+                NamedApplicationContext namedContext = new NamedApplicationContext(applicationContext, metaData.getDefaultName());
                 JndiParse parser = new XmlJndiParse();
                 namedContext.initializeName(parser.getJndiName(new VFSResource(metaData.getResource())));
                 return applicationContext;

@@ -79,8 +79,10 @@ public class SpringStructureProcessor implements DeploymentUnitProcessor {
 		}
         
 		if (!springContextLocations.isEmpty()) {
+			String xmlApplicationContext = SpringDeployment.xmlApplicationContext;
 			SpringDeployment springDeployment = new SpringDeployment(
 					springContextLocations);
+			SpringDeployment.xmlApplicationContext=xmlApplicationContext;
 			springDeployment.attachTo(deploymentUnit);
 			try {
 				Class.forName("org.springframework.context.annotation.AnnotationConfigApplicationContext");
