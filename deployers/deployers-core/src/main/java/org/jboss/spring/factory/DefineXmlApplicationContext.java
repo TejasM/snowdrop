@@ -21,8 +21,7 @@ public class DefineXmlApplicationContext extends
 	public void initializeName(String... names) {
 		// TODO Auto-generated method stub
 		super.initializeName(names);
-		XmlBeanDefinitionReader reader = new XmlBeanDefinitionReader((BeanDefinitionRegistry) this.context.getAutowireCapableBeanFactory());
-		reader.loadBeanDefinitions(resource);
+		
 	}
 
 }

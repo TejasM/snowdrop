@@ -42,6 +42,7 @@ import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.value.InjectedValue;
+import org.jboss.spring.factory.CustomXmlApplicationListener;
 import org.jboss.spring.factory.DefineXmlApplicationContext;
 import org.jboss.spring.factory.NamedApplicationContext;
 import org.jboss.spring.util.BasePackageParserImpl;
@@ -51,10 +52,9 @@ import org.jboss.spring.util.XmlJndiParse;
 import org.jboss.spring.vfs.VFSResource;
 import org.jboss.spring.vfs.context.VFSClassPathXmlApplicationContext;
 import org.jboss.vfs.VirtualFile;
-import org.springframework.beans.factory.support.BeanDefinitionRegistry;
-import org.springframework.beans.factory.xml.XmlBeanDefinitionReader;
 import org.springframework.beans.factory.xml.XmlBeanFactory;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationListener;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.support.GenericApplicationContext;
 
@@ -94,7 +94,9 @@ public class SpringBootstrapProcessor implements DeploymentUnitProcessor {
 						namedContext = setJndiName(new XmlJndiParse(), virtualFile, applicationContext, name);
 					}else{
 						applicationContext = customXmlApplicationContext(virtualFile);
-						namedContext = setCustomXmlJndiName(new XmlJndiParse(), virtualFile, applicationContext, name);
+						ApplicationListener listener = new CustomXmlApplicationListener(new VFSResource(virtualFile));
+						applicationContext.addApplicationListener(listener);
+						namedContext = setJndiName(new XmlJndiParse(), virtualFile, applicationContext, name);
 					}
 					
 				} else {
@@ -177,7 +179,7 @@ public class SpringBootstrapProcessor implements DeploymentUnitProcessor {
 		return applicationContext;
 	}
 	
-	private ConfigurableApplicationContext customXmlApplicationContext(VirtualFile virtualFile) {
+	private ConfigurableApplicationContext customXmlApplicationContext(VirtualFile virtualFile) throws ClassNotFoundException {
 		ConfigurableApplicationContext applicationContext;
 		try{
 			Class xmlApplicationContext = Class
@@ -185,6 +187,9 @@ public class SpringBootstrapProcessor implements DeploymentUnitProcessor {
 			Constructor ct = xmlApplicationContext
 					.getConstructor();
 			applicationContext = (ConfigurableApplicationContext) ct.newInstance();			
+		} catch (ClassNotFoundException e) {
+			System.out.println("ERROR: XmlApplicationContext specified could not be found");
+			throw new ClassNotFoundException();
 		} catch (Exception e) {
 			e.printStackTrace();
 			System.out.println("ERROR: Please use a valid xml application context");
