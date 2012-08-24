@@ -118,7 +118,6 @@ public class SpringExtension implements Extension {
 				ParseUtils.requireNoContent(reader);
 				System.out.println("Got XmlApplicationContext to be: " + SpringDeployment.xmlApplicationContext);
             } catch(Exception e) {
-            	e.printStackTrace();
 				System.out.println("Didn't find XmlApplicationContext Element");
             	ParseUtils.requireNoContent(reader);
             }            

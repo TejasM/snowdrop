@@ -63,8 +63,7 @@ import org.springframework.context.support.GenericApplicationContext;
  */
 public class SpringBootstrapProcessor implements DeploymentUnitProcessor {
 
-    @SuppressWarnings("rawtypes")
-	@Override
+    @Override
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         ServiceTarget serviceTarget = phaseContext.getServiceTarget();
         SpringDeployment locations = SpringDeployment.retrieveFrom(phaseContext.getDeploymentUnit());
@@ -97,6 +96,8 @@ public class SpringBootstrapProcessor implements DeploymentUnitProcessor {
 						ApplicationListener listener = new CustomXmlApplicationListener(new VFSResource(virtualFile));
 						applicationContext.addApplicationListener(listener);
 						namedContext = setJndiName(new XmlJndiParse(), virtualFile, applicationContext, name);
+						// Alternatively to listener
+						//namedContext = setCustomXmlJndiName(new XmlJndiParse(), virtualFile, applicationContext, name);
 					}
 					
 				} else {
@@ -152,6 +153,7 @@ public class SpringBootstrapProcessor implements DeploymentUnitProcessor {
         }
     }
 
+	@SuppressWarnings("unused")
 	private NamedApplicationContext setCustomXmlJndiName(
 			XmlJndiParse xmlJndiParse, VirtualFile virtualFile,
 			ConfigurableApplicationContext applicationContext, String name) {
@@ -182,9 +184,9 @@ public class SpringBootstrapProcessor implements DeploymentUnitProcessor {
 	private ConfigurableApplicationContext customXmlApplicationContext(VirtualFile virtualFile) throws ClassNotFoundException {
 		ConfigurableApplicationContext applicationContext;
 		try{
-			Class xmlApplicationContext = Class
+			Class<?> xmlApplicationContext = Class
 					.forName(SpringDeployment.xmlApplicationContext);
-			Constructor ct = xmlApplicationContext
+			Constructor<?> ct = xmlApplicationContext
 					.getConstructor();
 			applicationContext = (ConfigurableApplicationContext) ct.newInstance();			
 		} catch (ClassNotFoundException e) {
@@ -214,9 +216,9 @@ public class SpringBootstrapProcessor implements DeploymentUnitProcessor {
 			NoSuchMethodException, InstantiationException,
 			IllegalAccessException, InvocationTargetException {
 		ConfigurableApplicationContext applicationContext;
-		Class annotationApplicationContext = Class
+		Class<?> annotationApplicationContext = Class
 				.forName("org.springframework.context.annotation.AnnotationConfigApplicationContext");
-		Constructor ct = annotationApplicationContext
+		Constructor<?> ct = annotationApplicationContext
 				.getConstructor();
 		applicationContext = (ConfigurableApplicationContext) ct.newInstance();
 		String[] basePackages = (new BasePackageParserImpl())

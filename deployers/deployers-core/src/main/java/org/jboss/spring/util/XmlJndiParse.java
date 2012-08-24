@@ -1,5 +1,6 @@
 package org.jboss.spring.util;
 
+import java.io.InputStream;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.regex.Matcher;
@@ -10,6 +11,7 @@ import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathFactory;
 
 import org.jboss.spring.factory.Constants;
+import org.springframework.core.io.InputStreamSource;
 import org.springframework.core.io.Resource;
 import org.xml.sax.InputSource;
 

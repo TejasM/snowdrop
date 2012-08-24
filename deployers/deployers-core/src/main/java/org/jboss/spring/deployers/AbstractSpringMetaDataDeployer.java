@@ -32,6 +32,7 @@ import org.jboss.spring.factory.Nameable;
 import org.jboss.util.naming.NonSerializableFactory;
 import org.jboss.util.naming.Util;
 import org.springframework.beans.factory.BeanFactory;
+import org.springframework.context.ConfigurableApplicationContext;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -73,7 +74,7 @@ public abstract class AbstractSpringMetaDataDeployer<T extends BeanFactory> exte
                 for (SpringContextDescriptor springContextDescriptor : springMetaData.getSpringContextDescriptors()) {
                     Thread.currentThread().setContextClassLoader(classLoader);
                     T beanFactory = doCreate(springContextDescriptor);
-                    String name = ((Nameable) beanFactory).getName();
+                    String name = ((ConfigurableApplicationContext) beanFactory).getDisplayName();
                     springContextDescriptor.setName(name);
                     bindIfPossible(beanFactory, name);                    
                     successfulBindings.add(name);

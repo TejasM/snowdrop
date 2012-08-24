@@ -40,9 +40,10 @@ public class ApplicationContextDeployer extends AbstractSpringMetaDataDeployer<C
         return new SpringDeploymentVisitor() {
             protected ConfigurableApplicationContext doCreate(SpringContextDescriptor metaData) {
             	VFSClassPathXmlApplicationContext applicationContext = new VFSClassPathXmlApplicationContext(new String[]{}, false);
+				applicationContext.setResource(metaData.getResource());
                 NamedApplicationContext namedContext = new NamedApplicationContext(applicationContext, metaData.getDefaultName());
                 JndiParse parser = new XmlJndiParse();
-                namedContext.initializeName(parser.getJndiName(new VFSResource(metaData.getResource())));
+                namedContext.initializeName(parser.getJndiName(metaData.getResource()));
                 return applicationContext;
             }
 

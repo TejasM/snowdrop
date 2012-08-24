@@ -49,7 +49,7 @@ public class ApplicationContextService implements Service<ApplicationContext> {
 
     @Override
     public void stop(StopContext context) {
-        this.applicationContext.stop();
+        this.applicationContext.close();
         this.applicationContext = null;
     }
 
