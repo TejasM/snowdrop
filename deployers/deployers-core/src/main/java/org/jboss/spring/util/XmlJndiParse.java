@@ -1,6 +1,5 @@
 package org.jboss.spring.util;
 
-import java.io.InputStream;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.regex.Matcher;
@@ -8,18 +7,18 @@ import java.util.regex.Pattern;
 
 import javax.xml.namespace.NamespaceContext;
 import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathFactory;
 
 import org.jboss.spring.factory.Constants;
-import org.springframework.core.io.InputStreamSource;
 import org.springframework.core.io.Resource;
 import org.xml.sax.InputSource;
 
 public class XmlJndiParse implements JndiParse {
 	@Override
 	public String[] getJndiName(Resource resource){
-		String name = null;
-		String parentName = null;
+		String name;
+		String parentName;
 		try {
             XPath xPath = XPathFactory.newInstance().newXPath();
             xPath.setNamespaceContext(new NamespaceContext() {
@@ -38,19 +37,32 @@ public class XmlJndiParse implements JndiParse {
                     return Collections.singleton("beans").iterator();
                 }
             });
-            String expression = "/beans/description";
+            String expression = "/beans:beans/beans:description";
             InputSource inputSource = new InputSource(resource.getInputStream());
             String description = xPath.evaluate(expression, inputSource);
+            
+            inputSource = new InputSource(resource.getInputStream());
+            if("".equals(description)){
+            	expression="/beans/description";
+            	description = xPath.evaluate(expression, inputSource);
+            }      
             
             if (description != null) {
                 Matcher bfm = Pattern.compile(Constants.BEAN_FACTORY_ELEMENT).matcher(description);
                 if (bfm.find()) {
                     name = bfm.group(1);
+                }else{
+                	name = null;
                 }
                 Matcher pbfm = Pattern.compile(Constants.PARENT_BEAN_FACTORY_ELEMENT).matcher(description);
                 if (pbfm.find()) {
                     parentName = pbfm.group(1);
+                }else{
+                	parentName = null;
                 }
+            }else{
+            	name = null;
+            	parentName=null;
             }
         } catch (Exception e) {
             throw new RuntimeException(e);

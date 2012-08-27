@@ -25,7 +25,6 @@ import org.jboss.deployers.spi.deployer.helpers.DeploymentVisitor;
 import org.jboss.spring.factory.NamedApplicationContext;
 import org.jboss.spring.util.JndiParse;
 import org.jboss.spring.util.XmlJndiParse;
-import org.jboss.spring.vfs.VFSResource;
 import org.jboss.spring.vfs.context.VFSClassPathXmlApplicationContext;
 import org.springframework.context.ConfigurableApplicationContext;
 
