@@ -38,6 +38,7 @@ import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
+import org.jboss.jandex.Index;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
@@ -122,21 +123,18 @@ public class SpringBootstrapProcessor implements DeploymentUnitProcessor {
     
     private ConfigurableApplicationContext setupApplicationContext(String springVersion, VirtualFile virtualFile, DeploymentPhaseContext phaseContext) throws ClassNotFoundException {
     	ConfigurableApplicationContext applicationContext;
-    	NamedApplicationContext namedContext; 
-		if (virtualFile.getPathName().endsWith(".xml")) {
+    	if (virtualFile.getPathName().endsWith(".xml")) {
 			String name = phaseContext.getDeploymentUnit().getName();
 
 			if("".equals(SpringDeployment.xmlApplicationContext)){
 				applicationContext = xmlApplicationContext(springVersion,
 					virtualFile);
-				namedContext = setJndiName(new XmlJndiParse(), virtualFile, applicationContext, name);
+				setJndiName(new XmlJndiParse(), virtualFile, applicationContext, name);
 			}else{
 				applicationContext = customXmlApplicationContext(virtualFile);
 				ApplicationListener listener = new CustomXmlApplicationListener(new VFSResource(virtualFile));
 				applicationContext.addApplicationListener(listener);
-				namedContext = setJndiName(new XmlJndiParse(), virtualFile, applicationContext, name);
-				// Alternatively to listener
-				//namedContext = setCustomXmlJndiName(new XmlJndiParse(), virtualFile, applicationContext, name);
+				setJndiName(new XmlJndiParse(), virtualFile, applicationContext, name);
 			}
 			
 		} else {
@@ -148,7 +146,7 @@ public class SpringBootstrapProcessor implements DeploymentUnitProcessor {
 					applicationContext = annotationApplicationContext(virtualFile);
 					String name = phaseContext.getDeploymentUnit().getName();
 					
-					namedContext = setJndiName(new PropsJndiParse(),
+					setJndiName(new PropsJndiParse(),
 							virtualFile, applicationContext, name);
 
 				} catch (Throwable e) {

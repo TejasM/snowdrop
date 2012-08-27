@@ -36,7 +36,6 @@ import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoader;
 import org.jboss.modules.filter.PathFilters;
-import org.springframework.util.ReflectionUtils;
 
 /**
  * @author Marius Bogoevici
