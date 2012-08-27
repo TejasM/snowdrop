@@ -83,45 +83,12 @@ public class SpringBootstrapProcessor implements DeploymentUnitProcessor {
                 if (hasNamespaceContextSelector) {
                     NamespaceContextSelector.pushCurrentSelector(moduleDescription.getNamespaceContextSelector());
                 }
-                NamedApplicationContext namedContext; 
-				if (virtualFile.getPathName().endsWith(".xml")) {
-					String name = phaseContext.getDeploymentUnit().getName();
-
-					if("".equals(SpringDeployment.xmlApplicationContext)){
-						applicationContext = xmlApplicationContext(springVersion,
-							virtualFile);
-						namedContext = setJndiName(new XmlJndiParse(), virtualFile, applicationContext, name);
-					}else{
-						applicationContext = customXmlApplicationContext(virtualFile);
-						ApplicationListener listener = new CustomXmlApplicationListener(new VFSResource(virtualFile));
-						applicationContext.addApplicationListener(listener);
-						namedContext = setJndiName(new XmlJndiParse(), virtualFile, applicationContext, name);
-						// Alternatively to listener
-						//namedContext = setCustomXmlJndiName(new XmlJndiParse(), virtualFile, applicationContext, name);
-					}
-					
-				} else {
-					if (springVersion.equals("3.0+")) {
-						try {
-							/*
-							 * Reflection for AnnotationApplicationContext
-							 */
-							applicationContext = annotationApplicationContext(virtualFile);
-							String name = phaseContext.getDeploymentUnit().getName();
-							
-							namedContext = setJndiName(new PropsJndiParse(),
-									virtualFile, applicationContext, name);
-
-						} catch (Throwable e) {
-							e.printStackTrace();
-							throw new RuntimeException();
-						}
-					} else {
-						continue;
-					}
-
-				}          
-                internalJndiName = namedContext.getName();
+                
+                applicationContext = setupApplicationContext(springVersion, virtualFile, phaseContext);
+                if(applicationContext==null){
+                	continue;
+                }
+                internalJndiName = applicationContext.getDisplayName();
             }catch (Exception e) {
             	e.printStackTrace();
 				throw new RuntimeException();
@@ -152,6 +119,49 @@ public class SpringBootstrapProcessor implements DeploymentUnitProcessor {
                     .install();
         }
     }
+    
+    private ConfigurableApplicationContext setupApplicationContext(String springVersion, VirtualFile virtualFile, DeploymentPhaseContext phaseContext) throws ClassNotFoundException {
+    	ConfigurableApplicationContext applicationContext;
+    	NamedApplicationContext namedContext; 
+		if (virtualFile.getPathName().endsWith(".xml")) {
+			String name = phaseContext.getDeploymentUnit().getName();
+
+			if("".equals(SpringDeployment.xmlApplicationContext)){
+				applicationContext = xmlApplicationContext(springVersion,
+					virtualFile);
+				namedContext = setJndiName(new XmlJndiParse(), virtualFile, applicationContext, name);
+			}else{
+				applicationContext = customXmlApplicationContext(virtualFile);
+				ApplicationListener listener = new CustomXmlApplicationListener(new VFSResource(virtualFile));
+				applicationContext.addApplicationListener(listener);
+				namedContext = setJndiName(new XmlJndiParse(), virtualFile, applicationContext, name);
+				// Alternatively to listener
+				//namedContext = setCustomXmlJndiName(new XmlJndiParse(), virtualFile, applicationContext, name);
+			}
+			
+		} else {
+			if (springVersion.equals("3.0+")) {
+				try {
+					/*
+					 * Reflection for AnnotationApplicationContext
+					 */
+					applicationContext = annotationApplicationContext(virtualFile);
+					String name = phaseContext.getDeploymentUnit().getName();
+					
+					namedContext = setJndiName(new PropsJndiParse(),
+							virtualFile, applicationContext, name);
+
+				} catch (Throwable e) {
+					e.printStackTrace();
+					throw new RuntimeException();
+				}
+			} else {
+				return null;
+			}
+
+		}
+		return applicationContext;
+	}
 
 	@SuppressWarnings("unused")
 	private NamedApplicationContext setCustomXmlJndiName(
@@ -194,7 +204,7 @@ public class SpringBootstrapProcessor implements DeploymentUnitProcessor {
 			throw new ClassNotFoundException();
 		} catch (Exception e) {
 			e.printStackTrace();
-			System.out.println("ERROR: Please use a valid xml application context");
+			System.out.println("ERROR: Please use a valid xml application context, i.e. one that implements ConfigurableApplicatonContext");
 			throw new RuntimeException();
 		}
 		return applicationContext;
