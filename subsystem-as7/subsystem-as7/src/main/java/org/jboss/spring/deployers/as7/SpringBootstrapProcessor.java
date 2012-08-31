@@ -38,7 +38,6 @@ import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
-import org.jboss.jandex.Index;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
@@ -63,9 +62,11 @@ import org.springframework.context.support.GenericApplicationContext;
  * @author Marius Bogoevici
  */
 public class SpringBootstrapProcessor implements DeploymentUnitProcessor {
+	
 
     @Override
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
+    	
         ServiceTarget serviceTarget = phaseContext.getServiceTarget();
         SpringDeployment locations = SpringDeployment.retrieveFrom(phaseContext.getDeploymentUnit());
         if (locations == null) {

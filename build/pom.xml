@@ -21,7 +21,20 @@
                 </property>
             </activation>
             <build>
-                <plugins>
+				<plugins>			
+					<plugin>
+						<groupId>org.codehaus.mojo</groupId>
+						<artifactId>aspectj-maven-plugin</artifactId>
+						<version>1.4</version>
+						<executions>
+							<execution>
+								<goals>
+									<goal>compile</goal><!-- to weave all your main classes -->
+									<goal>test-compile</goal><!-- to weave all your test classes -->
+								</goals>
+							</execution>
+						</executions>
+					</plugin>
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-assembly-plugin</artifactId>
