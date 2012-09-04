@@ -71,5 +71,6 @@
 		<module name="org.slf4j" />
 		<module name="org.slf4j.ext" />
 		<module name="cglib.cglib-nodep" export="true" />
+		<module name="org.jboss.snowdrop" />
 	</dependencies>
 </module>

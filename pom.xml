@@ -55,7 +55,7 @@
 		<version.org.jboss.as7>7.1.0.Final</version.org.jboss.as7>
 		<version.spring>2.5.6.SEC02</version.spring>
 		<version.org.jboss.jandex>1.0.0.Beta7</version.org.jboss.jandex>
-		<version.aspectj>1.6.6</version.aspectj>
+		<version.aspectj>1.7.0</version.aspectj>
 		<version.jboss.msc>1.0.1.GA</version.jboss.msc>
 		<version.javax.resource>1.0.0.Final</version.javax.resource>
 		<version.ironjacamar.api>1.0.4.Final</version.ironjacamar.api>
@@ -469,12 +469,6 @@
 				<version>2.2.2</version>
 			</dependency>
 
-			<dependency>
-				<groupId>org.aspectj</groupId>
-				<artifactId>aspectjrt</artifactId>
-				<version>1.7.0</version>
-			</dependency>
-
 		</dependencies>
 
 
@@ -497,19 +491,6 @@
 				<defaultGoal>process-test-resources</defaultGoal>
 				<plugins>
 					<plugin>
-						<groupId>org.codehaus.mojo</groupId>
-						<artifactId>aspectj-maven-plugin</artifactId>
-						<version>1.4</version>
-						<executions>
-							<execution>
-								<goals>
-									<goal>compile</goal><!-- to weave all your main classes -->
-									<goal>test-compile</goal><!-- to weave all your test classes -->
-								</goals>
-							</execution>
-						</executions>
-					</plugin>
-					<plugin>
 						<artifactId>maven-eclipse-plugin</artifactId>
 						<executions>
 							<execution>
@@ -523,6 +504,29 @@
 						<configuration>
 							<downloadSources>true</downloadSources>
 							<buildOutputDirectory>${microcontainer.outputDirectory}</buildOutputDirectory>
+						</configuration>
+					</plugin>
+
+					<plugin>
+						<groupId>org.codehaus.mojo</groupId>
+						<artifactId>aspectj-maven-plugin</artifactId>
+						<version>1.4</version>
+						<executions>
+							<execution>
+								<goals>
+									<goal>compile</goal>       <!-- use this goal to weave all your main classes -->
+								</goals>
+							</execution>
+						</executions>
+						<configuration>
+							<aspectDirectory>subsystem-as7/subsystem-as7/src/main/java/org/jboss/spring/deployers/aspects/</aspectDirectory>	
+							<weaveDependencies>
+								<weaveDependency>
+									<groupId>org.springframework</groupId>
+									<artifactId>spring-context</artifactId>
+								</weaveDependency>
+							</weaveDependencies>
+							<complianceLevel>1.6</complianceLevel>
 						</configuration>
 					</plugin>
 				</plugins>
