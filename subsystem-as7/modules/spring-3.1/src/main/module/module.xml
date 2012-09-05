@@ -33,6 +33,7 @@
         <resource-root path="spring-core.jar"/>
         <resource-root path="spring-expression.jar"/>
         <resource-root path="spring-web.jar"/>
+        <resource-root path="cglib-nodep.jar"/>
     </resources>
 	<dependencies>
 		<module name="ch.qos.cal10n" />
@@ -70,7 +71,6 @@
 		<module name="org.jboss.vfs" />
 		<module name="org.slf4j" />
 		<module name="org.slf4j.ext" />
-		<module name="cglib.cglib-nodep" export="true" />
 		<module name="org.jboss.snowdrop" />
 	</dependencies>
 </module>
