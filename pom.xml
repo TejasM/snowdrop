@@ -511,6 +511,13 @@
 						<groupId>org.codehaus.mojo</groupId>
 						<artifactId>aspectj-maven-plugin</artifactId>
 						<version>1.4</version>
+						<dependencies>
+							<dependency>
+								<groupId>org.aspectj</groupId>
+								<artifactId>aspectjrt</artifactId>
+								<version>1.7.0</version>
+							</dependency>
+						</dependencies>
 						<executions>
 							<execution>
 								<goals>

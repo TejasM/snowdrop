@@ -28,6 +28,7 @@ import java.util.Set;
 
 import org.jboss.as.server.deployment.AttachmentKey;
 import org.jboss.as.server.deployment.DeploymentUnit;
+import org.jboss.jandex.Index;
 import org.jboss.vfs.VirtualFile;
 
 /**
@@ -40,6 +41,8 @@ public class SpringDeployment {
     public static String xmlApplicationContext = "";
     
     private String springVersion;
+    
+    public static Index index;
     
     private Set<VirtualFile> contextDefinitionLocations = new HashSet<VirtualFile>();
 
@@ -66,5 +69,6 @@ public class SpringDeployment {
 	public void setSpringVersion(String springVersion) {
 		this.springVersion = springVersion;
 	}
+
 
 }

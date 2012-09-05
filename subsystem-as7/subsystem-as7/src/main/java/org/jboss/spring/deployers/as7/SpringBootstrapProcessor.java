@@ -25,6 +25,7 @@ package org.jboss.spring.deployers.as7;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.Map;
 
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.naming.ServiceBasedNamingStore;
@@ -38,6 +39,9 @@ import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
+import org.jboss.as.server.deployment.annotation.AnnotationIndexUtils;
+import org.jboss.as.server.deployment.module.ResourceRoot;
+import org.jboss.jandex.Index;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
@@ -66,6 +70,13 @@ public class SpringBootstrapProcessor implements DeploymentUnitProcessor {
 
     @Override
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
+    	
+    	Map<ResourceRoot, Index> indexes = AnnotationIndexUtils.getAnnotationIndexes(phaseContext.getDeploymentUnit());
+    	for(ResourceRoot root: indexes.keySet()){
+    		if(root.getRootName().equals("classes")){
+    			SpringDeployment.index = indexes.get(root);
+    		}
+    	}
     	
         ServiceTarget serviceTarget = phaseContext.getServiceTarget();
         SpringDeployment locations = SpringDeployment.retrieveFrom(phaseContext.getDeploymentUnit());

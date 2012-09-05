@@ -162,19 +162,19 @@
 					<showWeaveInfo>true</showWeaveInfo>
 					<weaveDirectories>
 						<weaveDirectory>
-						/home/yyz/tmehta/jboss-as-7.1.1.Final/modules/org/springframework/spring/snowdrop/spring-context.jar
+						${JBOSS_HOME}/modules/org/springframework/spring/snowdrop/spring-context.jar
 						</weaveDirectory>
 						<weaveDirectory>
-						/home/yyz/tmehta/jboss-as-7.1.1.Final/modules/org/springframework/spring/snowdrop/spring-expression.jar
+						${JBOSS_HOME}/modules/org/springframework/spring/snowdrop/spring-expression.jar
 						</weaveDirectory>
 						<weaveDirectory>
-						/home/yyz/tmehta/jboss-as-7.1.1.Final/modules/org/springframework/spring/snowdrop/spring-beans.jar
+						${JBOSS_HOME}/modules/org/springframework/spring/snowdrop/spring-beans.jar
 						</weaveDirectory>
 						<weaveDirectory>
-						/home/yyz/tmehta/jboss-as-7.1.1.Final/modules/org/springframework/spring/snowdrop/spring-core.jar
+						${JBOSS_HOME}/modules/org/springframework/spring/snowdrop/spring-core.jar
 						</weaveDirectory>
 						<weaveDirectory>
-						/home/yyz/tmehta/jboss-as-7.1.1.Final/modules/javax/el/api/main/jboss-el-api_2.2_spec-1.0.0.Final.jar
+						${JBOSS_HOME}/modules/javax/el/api/main/jboss-el-api_2.2_spec-1.0.0.Final.jar
 						</weaveDirectory>						
 					</weaveDirectories>
 					<complianceLevel>1.6</complianceLevel>
