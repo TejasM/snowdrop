@@ -39,13 +39,10 @@ import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
-import org.jboss.jandex.Index;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.value.InjectedValue;
-import org.jboss.spring.factory.CustomXmlApplicationListener;
-import org.jboss.spring.factory.DefineXmlApplicationContext;
 import org.jboss.spring.factory.NamedApplicationContext;
 import org.jboss.spring.util.BasePackageParserImpl;
 import org.jboss.spring.util.JndiParse;
@@ -55,13 +52,9 @@ import org.jboss.spring.vfs.VFSResource;
 import org.jboss.spring.vfs.context.VFSClassPathXmlApplicationContext;
 import org.jboss.vfs.VirtualFile;
 import org.springframework.beans.BeansException;
-import org.springframework.beans.factory.xml.XmlBeanFactory;
 import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationListener;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
-import org.springframework.context.support.GenericApplicationContext;
-import org.springframework.core.io.support.ResourcePatternResolver;
 
 /**
  * @author Marius Bogoevici
@@ -161,17 +154,6 @@ public class SpringBootstrapProcessor implements DeploymentUnitProcessor {
 
 		}
 		return applicationContext;
-	}
-
-	@SuppressWarnings("unused")
-	private NamedApplicationContext setCustomXmlJndiName(
-			XmlJndiParse xmlJndiParse, VirtualFile virtualFile,
-			ConfigurableApplicationContext applicationContext, String name) {
-		DefineXmlApplicationContext namedContext;
-		namedContext = new DefineXmlApplicationContext(applicationContext, name, new VFSResource(virtualFile));
-		namedContext.initializeName(xmlJndiParse
-				.getJndiName(new VFSResource(virtualFile)));
-		return namedContext;
 	}
 
 	private ConfigurableApplicationContext xmlApplicationContext(

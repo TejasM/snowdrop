@@ -43,8 +43,9 @@ public class SpringDeployment {
     
     private Set<VirtualFile> contextDefinitionLocations = new HashSet<VirtualFile>();
 
-    public SpringDeployment(Set<VirtualFile> contextDefinitionLocations) {
+    public SpringDeployment(Set<VirtualFile> contextDefinitionLocations, String xmlApplicationContext) {
         this.contextDefinitionLocations = contextDefinitionLocations;
+        this.xmlApplicationContext = xmlApplicationContext;
     }
 
     public Set<VirtualFile> getContextDefinitionLocations() {
