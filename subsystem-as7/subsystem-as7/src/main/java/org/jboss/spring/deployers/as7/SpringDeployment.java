@@ -37,7 +37,7 @@ public class SpringDeployment {
 
     public static final AttachmentKey<SpringDeployment> ATTACHMENT_KEY = AttachmentKey.create(SpringDeployment.class);
     
-    public static String xmlApplicationContext = "";
+    private String xmlApplicationContext = "";
     
     private String springVersion;
     
@@ -65,6 +65,14 @@ public class SpringDeployment {
 
 	public void setSpringVersion(String springVersion) {
 		this.springVersion = springVersion;
+	}
+
+	public String getXmlApplicationContext() {
+		return xmlApplicationContext;
+	}
+
+	public void setXmlApplicationContext(String xmlApplicationContext) {
+		this.xmlApplicationContext = xmlApplicationContext;
 	}
 
 }

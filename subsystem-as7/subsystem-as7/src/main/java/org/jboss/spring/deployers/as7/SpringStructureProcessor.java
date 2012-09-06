@@ -38,6 +38,12 @@ import org.jboss.vfs.VirtualFile;
  * @author Marius Bogoevici
  */
 public class SpringStructureProcessor implements DeploymentUnitProcessor {
+	
+	private String xmlApplicationContext;
+	
+	public SpringStructureProcessor(String xmlApplicationContext) {
+		this.xmlApplicationContext = xmlApplicationContext;
+	}
 
     private static final Logger log = Logger.getLogger("org.jboss.snowdrop");
 
@@ -79,10 +85,8 @@ public class SpringStructureProcessor implements DeploymentUnitProcessor {
 		}
         
 		if (!springContextLocations.isEmpty()) {
-			String xmlApplicationContext = SpringDeployment.xmlApplicationContext;
 			SpringDeployment springDeployment = new SpringDeployment(
 					springContextLocations);
-			SpringDeployment.xmlApplicationContext=xmlApplicationContext;
 			springDeployment.attachTo(deploymentUnit);
 			try {
 				Class.forName("org.springframework.context.annotation.AnnotationConfigApplicationContext");

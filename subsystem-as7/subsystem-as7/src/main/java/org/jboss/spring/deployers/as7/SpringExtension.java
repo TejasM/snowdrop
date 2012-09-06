@@ -42,7 +42,6 @@ import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.common.CommonDescriptions;
-import org.jboss.as.controller.parsing.Element;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.parsing.ParseUtils;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
@@ -112,11 +111,12 @@ public class SpringExtension implements Extension {
         @Override
         public void readElement(XMLExtendedStreamReader reader, List<ModelNode> list) throws XMLStreamException {
             ParseUtils.requireNoAttributes(reader);
+            String xmlApplicationContext = "";
             try{
 				ParseUtils.nextElement(reader);
-				SpringDeployment.xmlApplicationContext = reader.getElementText();				
+				xmlApplicationContext = reader.getElementText();
 				ParseUtils.requireNoContent(reader);
-				System.out.println("Got XmlApplicationContext to be: " + SpringDeployment.xmlApplicationContext);
+				System.out.println("Got XmlApplicationContext to be: " + xmlApplicationContext);
             } catch(Exception e) {
 				System.out.println("Didn't find XmlApplicationContext Element");
             	ParseUtils.requireNoContent(reader);
@@ -124,13 +124,14 @@ public class SpringExtension implements Extension {
             final ModelNode update = new ModelNode();
             update.get(OP).set(ADD);
             update.get(OP_ADDR).add(SUBSYSTEM, SUBSYSTEM_NAME);
-            list.add(createAddSubSystemOperation());
+            list.add(createAddSubSystemOperation(xmlApplicationContext));
         }
 
-        private static ModelNode createAddSubSystemOperation() {
+        private static ModelNode createAddSubSystemOperation(String xmlApplicationContext) {
             final ModelNode subsystem = new ModelNode();
             subsystem.get(OP).set(ADD);
             subsystem.get(OP_ADDR).add(ModelDescriptionConstants.SUBSYSTEM, SUBSYSTEM_NAME);
+            subsystem.get("xmlApplicationContext").set(xmlApplicationContext);
             return subsystem;
         }
 

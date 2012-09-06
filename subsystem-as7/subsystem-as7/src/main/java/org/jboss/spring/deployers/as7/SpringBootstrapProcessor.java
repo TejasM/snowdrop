@@ -126,12 +126,12 @@ public class SpringBootstrapProcessor implements DeploymentUnitProcessor {
     	if (virtualFile.getPathName().endsWith(".xml")) {
 			String name = phaseContext.getDeploymentUnit().getName();
 
-			if("".equals(SpringDeployment.xmlApplicationContext)){
+			if("".equals(SpringDeployment.retrieveFrom(phaseContext.getDeploymentUnit()).getXmlApplicationContext())){
 				applicationContext = xmlApplicationContext(springVersion,
 					virtualFile);
 				setJndiName(new XmlJndiParse(), virtualFile, applicationContext, name);
 			}else{
-				applicationContext = customXmlApplicationContext(virtualFile);
+				applicationContext = customXmlApplicationContext(SpringDeployment.retrieveFrom(phaseContext.getDeploymentUnit()), virtualFile);
 				ApplicationListener listener = new CustomXmlApplicationListener(new VFSResource(virtualFile));
 				applicationContext.addApplicationListener(listener);
 				setJndiName(new XmlJndiParse(), virtualFile, applicationContext, name);
@@ -189,11 +189,11 @@ public class SpringBootstrapProcessor implements DeploymentUnitProcessor {
 		return applicationContext;
 	}
 	
-	private ConfigurableApplicationContext customXmlApplicationContext(VirtualFile virtualFile) throws ClassNotFoundException {
+	private ConfigurableApplicationContext customXmlApplicationContext(SpringDeployment springDeployment, VirtualFile virtualFile) throws ClassNotFoundException {
 		ConfigurableApplicationContext applicationContext;
 		try{
 			Class<?> xmlApplicationContext = Class
-					.forName(SpringDeployment.xmlApplicationContext);
+					.forName(springDeployment.getXmlApplicationContext());
 			Constructor<?> ct = xmlApplicationContext
 					.getConstructor();
 			applicationContext = (ConfigurableApplicationContext) ct.newInstance();			
