@@ -22,9 +22,7 @@
 
 package org.jboss.spring.deployers.as7;
 
-import java.io.IOException;
 import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 import org.jboss.as.ee.component.EEModuleDescription;
@@ -49,12 +47,11 @@ import org.jboss.spring.util.JndiParse;
 import org.jboss.spring.util.PropsJndiParse;
 import org.jboss.spring.util.XmlJndiParse;
 import org.jboss.spring.vfs.VFSResource;
-import org.jboss.spring.vfs.context.VFSClassPathXmlApplicationContext;
 import org.jboss.vfs.VirtualFile;
-import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
+
 
 /**
  * @author Marius Bogoevici
@@ -84,6 +81,7 @@ public class SpringBootstrapProcessor implements DeploymentUnitProcessor {
                 
                 applicationContext = setupApplicationContext(springVersion, virtualFile, phaseContext);
                 if(applicationContext==null){
+                	System.err.println("Unable to create application context from file: " + virtualFile.getName());
                 	continue;
                 }
                 internalJndiName = applicationContext.getDisplayName();
@@ -122,32 +120,22 @@ public class SpringBootstrapProcessor implements DeploymentUnitProcessor {
     	ConfigurableApplicationContext applicationContext;
     	if (virtualFile.getPathName().endsWith(".xml")) {
 			String name = phaseContext.getDeploymentUnit().getName();
-
-			if("".equals(SpringDeployment.retrieveFrom(phaseContext.getDeploymentUnit()).getXmlApplicationContext())){
-				applicationContext = xmlApplicationContext(springVersion,
-					virtualFile);
+				applicationContext = xmlApplicationContext(SpringDeployment.retrieveFrom(phaseContext.getDeploymentUnit()), virtualFile);
+				if(applicationContext==null){
+					return null;
+				}
 				setJndiName(new XmlJndiParse(), virtualFile, applicationContext, name);
-			}else{
-				applicationContext = customXmlApplicationContext(SpringDeployment.retrieveFrom(phaseContext.getDeploymentUnit()), virtualFile);
-				setJndiName(new XmlJndiParse(), virtualFile, applicationContext, name);
-			}
 			
 		} else {
 			if (springVersion.equals("3.0+")) {
-				try {
-					/*
-					 * Reflection for AnnotationApplicationContext
-					 */
-					applicationContext = annotationApplicationContext(virtualFile);
-					String name = phaseContext.getDeploymentUnit().getName();
-					
-					setJndiName(new PropsJndiParse(),
+						applicationContext = annotationApplicationContext(SpringDeployment.retrieveFrom(phaseContext.getDeploymentUnit()),
+								virtualFile);
+						if(applicationContext==null){
+							return null;
+						}
+						String name = phaseContext.getDeploymentUnit().getName();
+						setJndiName(new PropsJndiParse(),
 							virtualFile, applicationContext, name);
-
-				} catch (Throwable e) {
-					e.printStackTrace();
-					throw new RuntimeException();
-				}
 			} else {
 				return null;
 			}
@@ -155,34 +143,16 @@ public class SpringBootstrapProcessor implements DeploymentUnitProcessor {
 		}
 		return applicationContext;
 	}
-
-	private ConfigurableApplicationContext xmlApplicationContext(
-			String springVersion, VirtualFile virtualFile) {
-		ConfigurableApplicationContext applicationContext;
-		
-			if (springVersion.equals("3.0+")) {						
-				try {
-					applicationContext = new ClassPathXmlApplicationContext((new VFSResource (virtualFile)).getURL().toString());
-				} catch (BeansException e) {
-					System.out.println("Error in file: " + virtualFile.getName());
-					return null;
-				} catch (IOException e) {
-					return null;
-				}
-			} else {
-				applicationContext = new VFSClassPathXmlApplicationContext(
-						new String[] {}, false);
-				((VFSClassPathXmlApplicationContext) applicationContext).setResource(new VFSResource(virtualFile));
-			}
-			
-		return applicationContext;
-	}
 	
-	private ConfigurableApplicationContext customXmlApplicationContext(SpringDeployment springDeployment, VirtualFile virtualFile) throws ClassNotFoundException {
+	private ConfigurableApplicationContext xmlApplicationContext(SpringDeployment springDeployment, VirtualFile virtualFile) throws ClassNotFoundException {
 		ConfigurableApplicationContext applicationContext;
 		try{
 			Class<?> xmlApplicationContext = Class
 					.forName(springDeployment.getXmlApplicationContext());
+			if(!ClassPathXmlApplicationContext.class.isAssignableFrom(xmlApplicationContext)){
+				System.err.println("Please use a xml context that extends: org.springframework.context.support.ClassPathXmlApplicationContext");
+				return null;
+			}
 			Constructor<?> ct = xmlApplicationContext
 					.getConstructor(new Class[] {String.class});
 			String resourceLocation = (new VFSResource(virtualFile)).getURL().toString();
@@ -209,24 +179,31 @@ public class SpringBootstrapProcessor implements DeploymentUnitProcessor {
 		return namedContext;
 	}
 
-	private ConfigurableApplicationContext annotationApplicationContext(
-			VirtualFile virtualFile) throws ClassNotFoundException,
-			NoSuchMethodException, InstantiationException,
-			IllegalAccessException, InvocationTargetException {
+	private ConfigurableApplicationContext annotationApplicationContext(SpringDeployment springDeployment, 
+			VirtualFile virtualFile) {
 		ConfigurableApplicationContext applicationContext;
-		Class<?> annotationApplicationContext = Class
-				.forName("org.springframework.context.annotation.AnnotationConfigApplicationContext");
-		Constructor<?> ct = annotationApplicationContext
-				.getConstructor();
-		applicationContext = (ConfigurableApplicationContext) ct.newInstance();
-		String[] basePackages = (new BasePackageParserImpl())
-				.parseBasePackages(new VFSResource(
-						virtualFile));						
-		Method methodScan = annotationApplicationContext.getDeclaredMethod("scan", String[].class);
-		methodScan.invoke(annotationApplicationContext.cast(applicationContext), new Object[]{basePackages});
+		try {			
+			Class<?> annotationApplicationContext = Class
+					.forName(springDeployment.getAnnotationApplicationContext());
+			if(!(Class.forName("org.springframework.context.annotation.AnnotationConfigApplicationContext").isAssignableFrom(annotationApplicationContext))){
+				System.err.println("Please use an annotation context that extends: org.springframework.context.annotation.AnnotationConfigApplicationContext");
+				return null;
+			}
+			Constructor<?> ct = annotationApplicationContext
+					.getConstructor();
+			applicationContext = (ConfigurableApplicationContext) ct.newInstance();
+			String[] basePackages = (new BasePackageParserImpl())
+					.parseBasePackages(new VFSResource(
+							virtualFile));						
+			Method methodScan = annotationApplicationContext.getDeclaredMethod("scan", String[].class);
+			methodScan.invoke(annotationApplicationContext.cast(applicationContext), new Object[]{basePackages});
+		} catch (Exception e) {
+			return null;
+		}
+		
 		return applicationContext;
 	}
-
+	
     @Override
     public void undeploy(DeploymentUnit context) {
 
