@@ -22,6 +22,7 @@
 
 package org.jboss.spring.deployers.as7;
 
+import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -53,11 +54,14 @@ import org.jboss.spring.util.XmlJndiParse;
 import org.jboss.spring.vfs.VFSResource;
 import org.jboss.spring.vfs.context.VFSClassPathXmlApplicationContext;
 import org.jboss.vfs.VirtualFile;
+import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.xml.XmlBeanFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.context.support.GenericApplicationContext;
+import org.springframework.core.io.support.ResourcePatternResolver;
 
 /**
  * @author Marius Bogoevici
@@ -132,8 +136,6 @@ public class SpringBootstrapProcessor implements DeploymentUnitProcessor {
 				setJndiName(new XmlJndiParse(), virtualFile, applicationContext, name);
 			}else{
 				applicationContext = customXmlApplicationContext(SpringDeployment.retrieveFrom(phaseContext.getDeploymentUnit()), virtualFile);
-				ApplicationListener listener = new CustomXmlApplicationListener(new VFSResource(virtualFile));
-				applicationContext.addApplicationListener(listener);
 				setJndiName(new XmlJndiParse(), virtualFile, applicationContext, name);
 			}
 			
@@ -177,9 +179,14 @@ public class SpringBootstrapProcessor implements DeploymentUnitProcessor {
 		ConfigurableApplicationContext applicationContext;
 		
 			if (springVersion.equals("3.0+")) {						
-				XmlBeanFactory beanFactory = new XmlBeanFactory(new VFSResource(virtualFile));
-				applicationContext = new GenericApplicationContext(beanFactory);
-				//applicationContext = new ClassPathXmlApplicationContext((new VFSResource (virtualFile)).toString());
+				try {
+					applicationContext = new ClassPathXmlApplicationContext((new VFSResource (virtualFile)).getURL().toString());
+				} catch (BeansException e) {
+					System.out.println("Error in file: " + virtualFile.getName());
+					return null;
+				} catch (IOException e) {
+					return null;
+				}
 			} else {
 				applicationContext = new VFSClassPathXmlApplicationContext(
 						new String[] {}, false);
@@ -195,14 +202,15 @@ public class SpringBootstrapProcessor implements DeploymentUnitProcessor {
 			Class<?> xmlApplicationContext = Class
 					.forName(springDeployment.getXmlApplicationContext());
 			Constructor<?> ct = xmlApplicationContext
-					.getConstructor();
-			applicationContext = (ConfigurableApplicationContext) ct.newInstance();			
+					.getConstructor(new Class[] {String.class});
+			String resourceLocation = (new VFSResource(virtualFile)).getURL().toString();
+			applicationContext = (ConfigurableApplicationContext) ct.newInstance(new Object[]{resourceLocation});			
 		} catch (ClassNotFoundException e) {
 			System.out.println("ERROR: XmlApplicationContext specified could not be found");
 			throw new ClassNotFoundException();
 		} catch (Exception e) {
 			e.printStackTrace();
-			System.out.println("ERROR: Please use a valid xml application context, i.e. one that implements ConfigurableApplicatonContext");
+			System.out.println("ERROR: Please use a valid xml application context, i.e. one that implements ClassPathApplicatonContext");
 			throw new RuntimeException();
 		}
 		return applicationContext;
