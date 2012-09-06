@@ -22,7 +22,9 @@
 
 package org.jboss.spring.deployers.as7;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.OperationContext;
@@ -50,7 +52,11 @@ public class SpringSubsystemAdd extends AbstractBoottimeAddStepHandler {
         log.info("Activating Spring Deployer subsystem");
         operationContext.addStep(new AbstractDeploymentChainStep() {
             protected void execute(DeploymentProcessorTarget bootContext) {
-                bootContext.addDeploymentProcessor(Phase.STRUCTURE, Phase.STRUCTURE_JBOSS_DEPLOYMENT_STRUCTURE_DESCRIPTOR + 1, new SpringStructureProcessor(modelNode.get("xmlApplicationContext").asString()));
+            	Map<String, String> customContextMap = new HashMap<String, String>();
+            	customContextMap.put("xmlApplicationContext", modelNode.get("xmlApplicationContext").asString());
+            	customContextMap.put("annotationApplicationContext", modelNode.get("annotationApplicationContext").asString());
+                bootContext.addDeploymentProcessor(Phase.STRUCTURE, Phase.STRUCTURE_JBOSS_DEPLOYMENT_STRUCTURE_DESCRIPTOR + 1,
+                		new SpringStructureProcessor(customContextMap));
                 bootContext.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_DEPENDENCIES_MANIFEST, new SpringDependencyProcessor());
                 bootContext.addDeploymentProcessor(Phase.INSTALL, Integer.MAX_VALUE, new SpringBootstrapProcessor());
             }

@@ -23,6 +23,7 @@
 package org.jboss.spring.deployers.as7;
 
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 import org.jboss.as.server.deployment.Attachments;
@@ -39,10 +40,10 @@ import org.jboss.vfs.VirtualFile;
  */
 public class SpringStructureProcessor implements DeploymentUnitProcessor {
 	
-	private String xmlApplicationContext;
+	private Map<String, String> customAppContextMap;
 	
-	public SpringStructureProcessor(String xmlApplicationContext) {
-		this.xmlApplicationContext = xmlApplicationContext;
+	public SpringStructureProcessor(Map<String, String> customAppContextMap) {
+		this.customAppContextMap = customAppContextMap;
 	}
 
     private static final Logger log = Logger.getLogger("org.jboss.snowdrop");
@@ -86,7 +87,7 @@ public class SpringStructureProcessor implements DeploymentUnitProcessor {
         
 		if (!springContextLocations.isEmpty()) {
 			SpringDeployment springDeployment = new SpringDeployment(
-					springContextLocations, xmlApplicationContext);
+					springContextLocations, customAppContextMap);
 			springDeployment.attachTo(deploymentUnit);
 			try {
 				Class.forName("org.springframework.context.annotation.AnnotationConfigApplicationContext");
