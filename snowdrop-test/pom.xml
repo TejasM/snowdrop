@@ -1,0 +1,112 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>org.jboss.snowdrop</groupId>
+		<artifactId>snowdrop-parent</artifactId>
+		<version>2.0.4.Final-SNAPSHOT</version>
+	</parent>
+	<groupId>snowdrop</groupId>
+	<artifactId>snowdrop-test</artifactId>
+	<version>2.0.4.Final-SNAPSHOT</version>
+    <properties>
+    		<arquillian.spring.version>1.0.0.Alpha2</arquillian.spring.version>
+    </properties>
+	<dependencies>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-beans</artifactId>
+			<version>3.1.1.RELEASE</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-core</artifactId>
+			<version>3.1.1.RELEASE</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-context</artifactId>
+			<version>3.1.1.RELEASE</version>
+		</dependency>
+
+
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>4.8.2</version>
+			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>org.jboss.arquillian.extension</groupId>
+			<artifactId>arquillian-service-integration-spring-inject</artifactId>
+			<version>${arquillian.spring.version}</version>
+			<scope>test</scope>
+		</dependency>
+
+
+		<dependency>
+			<groupId>org.jboss.arquillian.junit</groupId>
+			<artifactId>arquillian-junit-container</artifactId>
+			<version>1.0.1.Final</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.jboss.arquillian.extension</groupId>
+			<artifactId>arquillian-service-integration-spring-javaconfig</artifactId>
+			<version>${arquillian.spring.version}</version>
+			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>org.jboss.arquillian.extension</groupId>
+			<artifactId>arquillian-service-deployer-spring-3</artifactId>
+			<version>${arquillian.spring.version}</version>
+			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>org.jboss.arquillian.protocol</groupId>
+			<artifactId>arquillian-protocol-servlet</artifactId>
+			<version>1.0.2.Final</version>
+			<scope>test</scope>
+		</dependency>
+
+	</dependencies>
+	
+	<profiles>
+	  	<profile>
+      		<id>arq-jbossas-managed</id>
+      		<dependencies>
+        		<dependency>
+          			<groupId>org.jboss.as</groupId>
+          			<artifactId>jboss-as-arquillian-container-managed</artifactId>
+          			<version>7.1.1.Final</version>
+          			<scope>test</scope>
+        		</dependency>
+        		<dependency>
+        			<groupId>org.jboss.integration</groupId>
+        			<artifactId>jboss-integration</artifactId>
+        			<version>6.0.0.CR1</version>
+        			<type>pom</type>
+        		</dependency>
+      		</dependencies>
+    	</profile>
+
+		<profile>
+			<id>arq-jbossas-remote</id>
+			<dependencies>
+				<dependency>
+					<groupId>org.jboss.as</groupId>
+					<artifactId>jboss-as-arquillian-container-remote</artifactId>
+					<scope>test</scope>
+					<version>7.1.1.Final</version>
+				</dependency>
+			</dependencies>
+		</profile>
+	</profiles>
+
+
+</project>

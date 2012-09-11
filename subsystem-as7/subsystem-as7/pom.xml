@@ -9,6 +9,8 @@
     <artifactId>snowdrop-subsystem-as7</artifactId>
     <name>Snowdrop AS7 Subsystem</name>
     <description>Spring subsystem for JBoss AS7</description>
+    
+
 
     <dependencies>
         <dependency>
@@ -17,11 +19,11 @@
             <version>${version.org.jboss.as7}</version>
         </dependency>
 
-        <dependency>
-                    <groupId>org.jboss.as</groupId>
-                    <artifactId>jboss-as-ee</artifactId>
-                    <version>${version.org.jboss.as7}</version>
-                </dependency>
+		<dependency>
+			<groupId>org.jboss.as</groupId>
+			<artifactId>jboss-as-ee</artifactId>
+			<version>${version.org.jboss.as7}</version>
+		</dependency>
 
         <dependency>
             <groupId>org.jboss.as</groupId>
@@ -76,7 +78,8 @@
 	      <groupId>org.aspectj</groupId>
 	      <artifactId>aspectjrt</artifactId>
 	    </dependency>
-
+	    
+	    
     </dependencies>
 
     <build>
@@ -177,6 +180,14 @@
 						${JBOSS_HOME}/modules/javax/el/api/main/jboss-el-api_2.2_spec-1.0.0.Final.jar
 						</weaveDirectory>						
 					</weaveDirectories>
+					<weaveDependencies>
+						<weaveDependency>
+							<groupId>org.springframework</groupId>
+							<artifactId>spring-context</artifactId>
+						</weaveDependency>
+					</weaveDependencies>
+					<outxml>true</outxml>
+					<outxmlfile>META-INF/aop.xml</outxmlfile>
 					<complianceLevel>1.6</complianceLevel>
 				</configuration>
 			</plugin>
@@ -201,7 +212,7 @@
                     </execution>
                 </executions>
             </plugin>
-        </plugins>
-
+		  </plugins>
     </build>
+    
 </project>

@@ -29,21 +29,14 @@ public class ContextInterceptor {
 	@Around("execution(public * org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider.findCandidateComponents(String))")
 	public Object interceptAndLog(ProceedingJoinPoint invocation) throws Throwable {
 		Object[] args = invocation.getArgs();
-		long time;
-		if(SpringDeployment.index!=null && new Exception().getStackTrace()[3].getClassName().contains("ComponentScanBeanDefinitionParser")){			
-			System.out.println("Using Jandex to define beans");
+		if(SpringDeployment.index!=null && new Exception().getStackTrace()[3].getClassName().contains("ComponentScanBeanDefinitionParser")){
 			classPathScanningObject = (ClassPathScanningCandidateComponentProvider) invocation.getThis();
-			System.out.println(args[0]);
-			time = System.nanoTime();
 			Object beans = findCandiateComponents((String) args[0]);
-			System.out.println(System.nanoTime() - time);
-			System.out.println(beans);
+/*			System.out.println(beans);
 			
 			System.out.println("Now using Orginal Method");
-			time = System.nanoTime();
 			beans = invocation.proceed();
-			System.out.println(System.nanoTime()-time);
-			System.out.println(beans);
+			System.out.println(beans);*/
 			return beans;
 		}
 		else{
