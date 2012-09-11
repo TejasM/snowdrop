@@ -239,7 +239,7 @@ public class SpringBootstrapProcessor implements DeploymentUnitProcessor {
 		Class<?> annotationApplicationContext = Class
 				.forName("org.springframework.context.annotation.AnnotationConfigApplicationContext");
 		Constructor<?> ct = annotationApplicationContext
-				.getConstructor();
+				.getDeclaredConstructor();
 		applicationContext = (ConfigurableApplicationContext) ct.newInstance();
 		String[] basePackages = (new BasePackageParserImpl())
 				.parseBasePackages(new VFSResource(

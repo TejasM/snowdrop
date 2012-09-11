@@ -180,14 +180,6 @@
 						${JBOSS_HOME}/modules/javax/el/api/main/jboss-el-api_2.2_spec-1.0.0.Final.jar
 						</weaveDirectory>						
 					</weaveDirectories>
-					<weaveDependencies>
-						<weaveDependency>
-							<groupId>org.springframework</groupId>
-							<artifactId>spring-context</artifactId>
-						</weaveDependency>
-					</weaveDependencies>
-					<outxml>true</outxml>
-					<outxmlfile>META-INF/aop.xml</outxmlfile>
 					<complianceLevel>1.6</complianceLevel>
 				</configuration>
 			</plugin>

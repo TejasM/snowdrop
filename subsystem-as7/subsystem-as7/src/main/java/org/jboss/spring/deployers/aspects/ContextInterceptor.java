@@ -32,11 +32,8 @@ public class ContextInterceptor {
 		if(SpringDeployment.index!=null && new Exception().getStackTrace()[3].getClassName().contains("ComponentScanBeanDefinitionParser")){
 			classPathScanningObject = (ClassPathScanningCandidateComponentProvider) invocation.getThis();
 			Object beans = findCandiateComponents((String) args[0]);
-/*			System.out.println(beans);
-			
-			System.out.println("Now using Orginal Method");
-			beans = invocation.proceed();
-			System.out.println(beans);*/
+			System.out.println("Using Custom Loader");
+			System.out.println(beans);
 			return beans;
 		}
 		else{
