@@ -1,9 +1,10 @@
 package org.jboss.spring.sampleclasses;
 
+import org.jboss.spring.annotations.Sample;
 import org.springframework.stereotype.Component;
 
 
-@Component
+@Sample
 public class SimpleClass {
 	
 	private String string;
