@@ -71,13 +71,6 @@ public class SpringBootstrapProcessor implements DeploymentUnitProcessor {
     @Override
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
     	
-    	Map<ResourceRoot, Index> indexes = AnnotationIndexUtils.getAnnotationIndexes(phaseContext.getDeploymentUnit());
-    	for(ResourceRoot root: indexes.keySet()){
-    		if(root.getRootName().equals("classes")){
-    			SpringDeployment.index = indexes.get(root);
-    		}
-    	}
-    	
         ServiceTarget serviceTarget = phaseContext.getServiceTarget();
         SpringDeployment locations = SpringDeployment.retrieveFrom(phaseContext.getDeploymentUnit());
         if (locations == null) {

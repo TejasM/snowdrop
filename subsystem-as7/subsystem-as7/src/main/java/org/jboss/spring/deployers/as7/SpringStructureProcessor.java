@@ -23,6 +23,7 @@
 package org.jboss.spring.deployers.as7;
 
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 import org.jboss.as.server.deployment.Attachments;
@@ -30,7 +31,9 @@ import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
+import org.jboss.as.server.deployment.annotation.AnnotationIndexUtils;
 import org.jboss.as.server.deployment.module.ResourceRoot;
+import org.jboss.jandex.Index;
 import org.jboss.logging.Logger;
 import org.jboss.vfs.VirtualFile;
 
@@ -50,6 +53,13 @@ public class SpringStructureProcessor implements DeploymentUnitProcessor {
         if (deploymentRoot == null) {
             return;
         }
+        
+    	Map<ResourceRoot, Index> indexes = AnnotationIndexUtils.getAnnotationIndexes(phaseContext.getDeploymentUnit());
+    	for(ResourceRoot root: indexes.keySet()){
+    		if(root.getRootName().equals("classes")){
+    			SpringDeployment.index = indexes.get(root);
+    		}
+    	}
 
         Set<VirtualFile> springContextLocations = new HashSet<VirtualFile>();
         VirtualFile metaInf = deploymentRoot.getRoot().getChild("META-INF");
