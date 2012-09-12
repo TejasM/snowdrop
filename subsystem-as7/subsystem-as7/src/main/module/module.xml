@@ -72,7 +72,7 @@
             <imports>
                 <include path="META-INF**"/>
                 <include path="org**"/>
-                <include path="net**"/>
+            	<include path="net**"/>
             </imports>
         </module>
         

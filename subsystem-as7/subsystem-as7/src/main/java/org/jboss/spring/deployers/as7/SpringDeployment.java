@@ -24,6 +24,7 @@ package org.jboss.spring.deployers.as7;
 
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 import org.jboss.as.server.deployment.AttachmentKey;
@@ -38,7 +39,9 @@ public class SpringDeployment {
 
     public static final AttachmentKey<SpringDeployment> ATTACHMENT_KEY = AttachmentKey.create(SpringDeployment.class);
     
-    public static String xmlApplicationContext = "";
+    private String xmlApplicationContext = "";
+    
+    private String annotationApplicationContext = "";
     
     private String springVersion;
     
@@ -46,8 +49,10 @@ public class SpringDeployment {
     
     private Set<VirtualFile> contextDefinitionLocations = new HashSet<VirtualFile>();
 
-    public SpringDeployment(Set<VirtualFile> contextDefinitionLocations) {
+    public SpringDeployment(Set<VirtualFile> contextDefinitionLocations, Map<String, String> customAppContextMap) {
         this.contextDefinitionLocations = contextDefinitionLocations;
+        this.xmlApplicationContext = customAppContextMap.get("xmlApplicationContext");
+        this.annotationApplicationContext = customAppContextMap.get("annotationApplicationContext");
     }
 
     public Set<VirtualFile> getContextDefinitionLocations() {
@@ -70,5 +75,21 @@ public class SpringDeployment {
 		this.springVersion = springVersion;
 	}
 
+	public String getXmlApplicationContext() {
+		return xmlApplicationContext;
+	}
+
+	public void setXmlApplicationContext(String xmlApplicationContext) {
+		this.xmlApplicationContext = xmlApplicationContext;
+	}
+
+	public String getAnnotationApplicationContext() {
+		return annotationApplicationContext;
+	}
+
+	public void setAnnotationApplicationContext(
+			String annotationApplicationContext) {
+		this.annotationApplicationContext = annotationApplicationContext;
+	}
 
 }

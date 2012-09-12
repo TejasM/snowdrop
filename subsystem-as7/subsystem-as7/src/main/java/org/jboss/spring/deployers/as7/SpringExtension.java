@@ -110,26 +110,26 @@ public class SpringExtension implements Extension {
          */
         @Override
         public void readElement(XMLExtendedStreamReader reader, List<ModelNode> list) throws XMLStreamException {
-            ParseUtils.requireNoAttributes(reader);
-            try{
-				ParseUtils.nextElement(reader);
-				SpringDeployment.xmlApplicationContext = reader.getElementText();				
-				ParseUtils.requireNoContent(reader);
-				System.out.println("Got XmlApplicationContext to be: " + SpringDeployment.xmlApplicationContext);
-            } catch(Exception e) {
-				System.out.println("Didn't find XmlApplicationContext Element");
-            	ParseUtils.requireNoContent(reader);
-            }            
+        	String[] customAppContext ={reader.getAttributeValue(null, "xmlApplicationContext"), reader.getAttributeValue(null, "annotationApplicationContext")};
+        	if(customAppContext[0]==null){
+        		customAppContext[0] = "org.springframework.context.support.ClassPathXmlApplicationContext";
+        	}
+        	if(customAppContext[1]==null){
+        		customAppContext[1] = "org.springframework.context.annotation.AnnotationConfigApplicationContext";
+        	}
+        	ParseUtils.requireNoContent(reader);           
             final ModelNode update = new ModelNode();
             update.get(OP).set(ADD);
             update.get(OP_ADDR).add(SUBSYSTEM, SUBSYSTEM_NAME);
-            list.add(createAddSubSystemOperation());
+            list.add(createAddSubSystemOperation(customAppContext));
         }
 
-        private static ModelNode createAddSubSystemOperation() {
+        private static ModelNode createAddSubSystemOperation(String[] customAppContext) {
             final ModelNode subsystem = new ModelNode();
             subsystem.get(OP).set(ADD);
             subsystem.get(OP_ADDR).add(ModelDescriptionConstants.SUBSYSTEM, SUBSYSTEM_NAME);
+            subsystem.get("xmlApplicationContext").set(customAppContext[0]);
+            subsystem.get("annotationApplicationContext").set(customAppContext[1]);
             return subsystem;
         }
 

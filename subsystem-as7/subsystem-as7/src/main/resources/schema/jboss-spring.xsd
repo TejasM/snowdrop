@@ -31,10 +31,8 @@
     <xs:element name="subsystem" type="subsystem"/>
 
 	<xs:complexType name="subsystem">
-		<xs:sequence>
-			<xs:element name="xmlApplicationContext"
-				default="org.springframwork.context.support.ClassPathXmlApplicationContext" />
-		</xs:sequence>
+		<xs:attribute name="xmlApplicationContext" default="org.springframework.context.support.ClassPathXmlApplicationContext" type="xs:string"/>
+		<xs:attribute name="annotationApplicationContext" default="org.springframework.context.annotation.AnnotationConfigApplicationContext" type="xs:string"/>
 	</xs:complexType>
     
     
