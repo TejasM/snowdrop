@@ -24,7 +24,6 @@ package org.jboss.spring.deployers.as7;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
-import java.util.Map;
 
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.naming.ServiceBasedNamingStore;

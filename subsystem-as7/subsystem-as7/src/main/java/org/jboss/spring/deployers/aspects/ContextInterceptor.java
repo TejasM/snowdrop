@@ -29,6 +29,7 @@ public class ContextInterceptor {
 	@Around("execution(public * org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider.findCandidateComponents(String))")
 	public Object interceptAndLog(ProceedingJoinPoint invocation)
 			throws Throwable {
+		long time;
 		Object[] args = invocation.getArgs();
 		System.out.println("Finding Components from " + args[0]);
 		if (SpringDeployment.index != null
@@ -37,9 +38,31 @@ public class ContextInterceptor {
 			classPathScanningObject = (ClassPathScanningCandidateComponentProvider) invocation
 					.getThis();
 			
-			System.out.println("Using Custom Loader by scanning all classes matching base package");
-			Object beans = findCandiateComponentsAlternate((String) args[0]);
+			time = System.currentTimeMillis();
+			Object beans = invocation.proceed();
+			System.out.println((System.currentTimeMillis()-time));
+			System.out.println("Using Original");
 			System.out.println(beans);
+
+			
+			time = System.currentTimeMillis();
+			beans = findCandiateComponents((String) args[0]);
+			System.out.println(System.currentTimeMillis()-time);
+			System.out.println("Using Custom Loader without Support for Meta Annotations");
+			System.out.println(beans);
+			
+			time = System.currentTimeMillis();
+			beans = findCandiateComponentsAlternate((String) args[0]);
+			System.out.println(System.currentTimeMillis()-time);
+			System.out.println("Using Custom Loader by scanning all classes matching base package");
+			System.out.println(beans);
+			
+			time = System.currentTimeMillis();
+			beans = findCandiateComponentsTwoPass((String) args[0]);
+			System.out.println(System.currentTimeMillis()-time);
+			System.out.println("Using Custom Loader through Two Pass");
+			System.out.println(beans);
+			
 			return beans;
 		} else {
 			System.out.println("Unable to create the beans from Jandex");
@@ -47,9 +70,6 @@ public class ContextInterceptor {
 		}
 	}
 	
-	/*
-	 * Find Components but no support for meta-annotations (fastest but not viable)
-	 */
 	private Object findCandiateComponents(String basePackage) {
 		Index index = SpringDeployment.index;
 		List<ClassInfo> componentClasses = new ArrayList<ClassInfo>();
@@ -64,9 +84,6 @@ public class ContextInterceptor {
 		return createBeanDefinitions(componentClasses);
 	}
 
-	/*
-	 * Find Components with support for meta-annotations but only for those in the deployed project (fairly fast)
-	 */
 	private Object findCandiateComponentsTwoPass(String basePackage) {
 		Index index = SpringDeployment.index;
 		List<ClassInfo> componentClasses = new ArrayList<ClassInfo>();
@@ -85,12 +102,10 @@ public class ContextInterceptor {
 		 */
 		// get Annotations marked as @Component
 		List<ClassInfo> customComponentAnnotations = scanForMetaAnnotations(index);
-		
-		//Scan for the custom annotations
-		scanForCustomComponents(beanSet, customComponentAnnotations, index, basePackage);
+		//Scan for those
+		scanForCustomComponents((Set<BeanDefinition>) beanSet, customComponentAnnotations, index, basePackage);
 		return beanSet;
 	}
-	
 	
 	private void scanForCustomComponents(Set<BeanDefinition> beanSet,
 			List<ClassInfo> customComponentAnnotations, Index index, String basePackage) {
@@ -103,7 +118,7 @@ public class ContextInterceptor {
 					componentClasses.add((ClassInfo) annotationInstance.target());
 			}			
 		}
-		beanDefs = (Set<BeanDefinition>) createBeanDefinitions(componentClasses);
+		beanDefs = createBeanDefinitions(componentClasses);
 		beanSet.addAll(beanDefs);
 	}
 
@@ -121,7 +136,7 @@ public class ContextInterceptor {
 		OverallLoop: for (DotName entry : annotations) {
 						for (AnnotationInstance t : classInfo.annotations().get(
 								entry)) {
-							if (isComponent(t.name().toString())) {
+							if (delveIntoAnnotation(t.name().toString(), new ArrayList<String>())) {
 								metaAnnotations.add(classInfo);
 								break OverallLoop;
 							}
@@ -135,10 +150,6 @@ public class ContextInterceptor {
 		return metaAnnotations;		
 	}
 
-	/*
-	 * Find Components with support for meta-annotations (slower but still almost 10 times faster than Spring's original 
-	 */
-	//TODO: Try and optimize a bit
 	private Object findCandiateComponentsAlternate(String basePackage){
 		Index index = SpringDeployment.index;
 		List<ClassInfo> list = new ArrayList<ClassInfo>();
@@ -166,23 +177,19 @@ public class ContextInterceptor {
 	private List<ClassInfo> extractComponentClasses(List<ClassInfo> list) {
 		List<ClassInfo> componentClasses = new ArrayList<ClassInfo>();
 		for (ClassInfo classInfo : list) {
-			try {
-				if((Class.forName(classInfo.name().toString(),
-						false, classPathScanningObject.getResourceLoader()
-								.getClassLoader()).isAnnotation())){
-					continue;
-				}
+			if (classInfo.annotations() != null) {
 				Set<DotName> annotations = classInfo
 						.annotations().keySet();
-	ComponentLoop: for (DotName entry : annotations) {
+	OverallLoop: for (DotName entry : annotations) {
 					for (AnnotationInstance t : classInfo.annotations().get(
 							entry)) {
+						try {
 							if (isComponent(t.name().toString())) {
 								if(!(Class.forName(classInfo.name().toString(),
 											false, classPathScanningObject.getResourceLoader()
 													.getClassLoader()).isAnnotation())){
 									componentClasses.add(classInfo);
-									break ComponentLoop;
+									break OverallLoop;
 								}
 							} else {
 									Class<?> cls = Class.forName(t.name().toString(),
@@ -191,23 +198,80 @@ public class ContextInterceptor {
 									if (cls.isAnnotation()) {
 										Annotation[] annos = cls.getAnnotations();
 										for (int i = 0; i < annos.length; i++) {
-											if (isComponent(annos[i]
-													.annotationType().toString())) {
+											if(delveIntoAnnotation(annos[i]
+													.annotationType().toString(), new ArrayList<String>())){
 												componentClasses.add(classInfo);
-												break ComponentLoop;											
+												break OverallLoop;	
 											}
 										}
 									} else {
 									
 									}
 								}
+						} catch (ClassNotFoundException e) {
+							e.printStackTrace();
+						}
 					}
 				}
-			} catch (Exception e) {
-				e.printStackTrace();
 			}
 		}
 		return componentClasses;
+	}
+	
+	/*
+	 * Go into the annotation to find if @Component is somewhere within
+	 */
+	private boolean delveIntoAnnotation(String string, List<String> annotationGraph) {
+		if(string.startsWith("interface ")){
+			string = string.substring("interface ".length());
+		}
+		try {
+			Class<?> annotation = Class.forName(string,
+					false, classPathScanningObject.getResourceLoader()
+					.getClassLoader());
+			if(isComponent(annotation.getName())){
+				return true;
+			}
+			if(javaMetaAnnotation(annotation.getName()) || annotationGraph.contains(annotation.getName())){
+				return false;					
+			}
+			annotationGraph.add(annotation
+					.getName());
+			Annotation[] annotations = annotation.getAnnotations();
+			for (Annotation annotation2 : annotations) {
+				if(javaMetaAnnotation(annotation2
+						.annotationType().toString())){
+					continue;
+				}
+				if(annotationGraph.contains(annotation2
+						.annotationType().toString())){
+					continue;					
+				}
+				annotationGraph.add(annotation
+						.getName());
+				if(isComponent(annotation2
+						.annotationType().toString())){
+					return true;
+				}else{
+					if(delveIntoAnnotation(annotation2
+						.annotationType().toString(), annotationGraph)){
+						return true;
+					}
+				}
+			}
+		} catch (ClassNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return false;
+	}
+
+	private boolean javaMetaAnnotation(String string) {
+		if(string.endsWith("Retention") || string.endsWith("Documented") ||
+				string.endsWith("Inherited") || string.endsWith("Target")){
+			return true;
+		}
+		return false;
 	}
 
 	private boolean isComponent(String string) {
