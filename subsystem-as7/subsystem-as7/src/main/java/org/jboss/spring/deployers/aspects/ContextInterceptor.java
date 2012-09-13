@@ -17,15 +17,14 @@ import org.jboss.spring.deployers.as7.SpringDeployment;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.GenericBeanDefinition;
 import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
-import org.springframework.core.io.Resource;
-import org.springframework.core.io.support.ResourcePatternResolver;
-import org.springframework.util.ClassUtils;
-import org.springframework.util.SystemPropertyUtils;
 
 @Aspect
 public class ContextInterceptor {
 	private ClassPathScanningCandidateComponentProvider classPathScanningObject;
 
+	/*
+	 * Aspect to intercept spring's BeanDefinition for component scanning
+	 */
 	@Around("execution(public * org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider.findCandidateComponents(String))")
 	public Object interceptAndLog(ProceedingJoinPoint invocation)
 			throws Throwable {
@@ -42,26 +41,23 @@ public class ContextInterceptor {
 			Object beans = invocation.proceed();
 			System.out.println((System.currentTimeMillis()-time));
 			System.out.println("Using Original");
-			System.out.println(beans);
 
 			
 			time = System.currentTimeMillis();
 			beans = findCandiateComponents((String) args[0]);
 			System.out.println(System.currentTimeMillis()-time);
 			System.out.println("Using Custom Loader without Support for Meta Annotations");
-			System.out.println(beans);
 			
 			time = System.currentTimeMillis();
 			beans = findCandiateComponentsAlternate((String) args[0]);
 			System.out.println(System.currentTimeMillis()-time);
 			System.out.println("Using Custom Loader by scanning all classes matching base package");
-			System.out.println(beans);
+
 			
 			time = System.currentTimeMillis();
 			beans = findCandiateComponentsTwoPass((String) args[0]);
 			System.out.println(System.currentTimeMillis()-time);
 			System.out.println("Using Custom Loader through Two Pass");
-			System.out.println(beans);
 			
 			return beans;
 		} else {
@@ -70,6 +66,9 @@ public class ContextInterceptor {
 		}
 	}
 	
+	/*
+	 * Meta Annotations not supported (fastest)
+	 */
 	private Object findCandiateComponents(String basePackage) {
 		Index index = SpringDeployment.index;
 		List<ClassInfo> componentClasses = new ArrayList<ClassInfo>();
@@ -83,7 +82,11 @@ public class ContextInterceptor {
 		}
 		return createBeanDefinitions(componentClasses);
 	}
-
+	
+	/*
+	 * Two Pass Scanning to scan for meta annotations that are in the deployment project
+	 * (Fast, almost as much as with no support for meta-annotations)
+	 */
 	private Object findCandiateComponentsTwoPass(String basePackage) {
 		Index index = SpringDeployment.index;
 		List<ClassInfo> componentClasses = new ArrayList<ClassInfo>();
@@ -107,6 +110,10 @@ public class ContextInterceptor {
 		return beanSet;
 	}
 	
+	
+	/*
+	 * Scan the index for the components declared via meta-annotations
+	 */
 	private void scanForCustomComponents(Set<BeanDefinition> beanSet,
 			List<ClassInfo> customComponentAnnotations, Index index, String basePackage) {
 		Set<BeanDefinition> beanDefs = new HashSet<BeanDefinition>();
@@ -121,7 +128,10 @@ public class ContextInterceptor {
 		beanDefs = createBeanDefinitions(componentClasses);
 		beanSet.addAll(beanDefs);
 	}
-
+	
+	/*
+	 * Scan the project for custom annotations
+	 */
 	private List<ClassInfo> scanForMetaAnnotations(Index index) {
 		List<ClassInfo> metaAnnotations = new ArrayList<ClassInfo>();
 		List<ClassInfo> list = new ArrayList<ClassInfo>();
@@ -150,6 +160,9 @@ public class ContextInterceptor {
 		return metaAnnotations;		
 	}
 
+	/*
+	 * Full meta-annotation support (Slower than two pass but not still at least 10x the speed of Spring's scan)
+	 */
 	private Object findCandiateComponentsAlternate(String basePackage){
 		Index index = SpringDeployment.index;
 		List<ClassInfo> list = new ArrayList<ClassInfo>();
@@ -174,6 +187,10 @@ public class ContextInterceptor {
 		return createBeanDefinitions(componentClasses);
 	}
 
+	/*
+	 * Extract all the components by looking through all annotated classes
+	 * and searching for any stereotype annotations
+	 */
 	private List<ClassInfo> extractComponentClasses(List<ClassInfo> list) {
 		List<ClassInfo> componentClasses = new ArrayList<ClassInfo>();
 		for (ClassInfo classInfo : list) {
@@ -219,7 +236,7 @@ public class ContextInterceptor {
 	}
 	
 	/*
-	 * Go into the annotation to find if @Component is somewhere within
+	 * Traverse the annotation "tree" to find if a stereotype annotation is somewhere within
 	 */
 	private boolean delveIntoAnnotation(String string, List<String> annotationGraph) {
 		if(string.startsWith("interface ")){
@@ -266,6 +283,9 @@ public class ContextInterceptor {
 		return false;
 	}
 
+	/*
+	 * Simple optimization function that detects the four main java meta-annotations
+	 */
 	private boolean javaMetaAnnotation(String string) {
 		if(string.endsWith("Retention") || string.endsWith("Documented") ||
 				string.endsWith("Inherited") || string.endsWith("Target")){
@@ -283,7 +303,9 @@ public class ContextInterceptor {
 					|| string.endsWith("Controller"));
 	}
 
-
+	/*
+	 * Get the standard components
+	 */
 	private List<AnnotationInstance> getComponentClasses(Index index) {
 		List<AnnotationInstance> annoatatedInstances = new ArrayList<AnnotationInstance>();
 		annoatatedInstances.addAll(index.getAnnotations(DotName
@@ -296,7 +318,9 @@ public class ContextInterceptor {
 				.createSimple("org.springframework.stereotype.Component")));
 		return annoatatedInstances;
 	}
-
+	/*
+	 * Check if the class package being checked for matches that of the basePackage
+	 */
 	private boolean matchBase(String string, String basePackage) {
 		String[] splitBase = basePackage.split("\\.");
 		String[] splitClass = string.split("\\.");
@@ -316,20 +340,16 @@ public class ContextInterceptor {
 		}
 		return true;
 	}
-
+	
+	/*
+	 * Create the actual bean definitions 
+	 */
 	private Set<BeanDefinition> createBeanDefinitions(List<ClassInfo> componentClasses) {
 		Set<BeanDefinition> beanDefs = new HashSet<BeanDefinition>();
 
 		for (ClassInfo class1 : componentClasses) {
-			String classPath = ResourcePatternResolver.CLASSPATH_URL_PREFIX
-					+ resolveBasePackage(class1.toString()) + ".class";
-			ResourcePatternResolver resourcePatternResolver = (ResourcePatternResolver) classPathScanningObject
-					.getResourceLoader();
 			try {
-				Resource resource = resourcePatternResolver
-						.getResource(classPath);
 				GenericBeanDefinition beanDefinition = new GenericBeanDefinition();
-				beanDefinition.setResource(resource);
 				beanDefinition.setBeanClass(Class.forName(class1.toString(),
 						false, classPathScanningObject.getResourceLoader()
 								.getClassLoader()));
@@ -340,11 +360,6 @@ public class ContextInterceptor {
 			}
 		}
 		return beanDefs;
-	}
-
-	private String resolveBasePackage(String string) {
-		return ClassUtils.convertClassNameToResourcePath(SystemPropertyUtils
-				.resolvePlaceholders(string));
 	}
 
 }
