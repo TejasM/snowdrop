@@ -1,0 +1,570 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN" "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
+
+<article lang="en">
+<articleinfo>
+    <title>Snowdrop User Guide</title>
+    <author>
+        <firstname>============================================</firstname>
+    </author>
+    <authorinitials>=</authorinitials>
+</articleinfo>
+<abstract id="_abstract">
+<simpara>This book is a guide for using Snowdrop</simpara>
+</abstract>
+<section id="_preface">
+<title>Preface</title>
+<section id="_document_conventions">
+<title>Document Conventions</title>
+<simpara>This manual uses several conventions to highlight certain words and phrases and draw attention to specific pieces of information.</simpara>
+<simpara>In PDF and paper editions, this manual uses typefaces drawn from the <ulink url="https://fedorahosted.org/liberation-fonts/">Liberation Fonts</ulink> set. The Liberation Fonts set is also used in HTML editions if the set is installed on your system. If not, alternative but equivalent typefaces are displayed. Note: Red Hat Enterprise Linux 5 and later includes the Liberation Fonts set by default.</simpara>
+<section id="_typographic_conventions">
+<title>Typographic Conventions</title>
+<simpara>Four typographic conventions are used to call attention to specific words and phrases. These conventions, and the circumstances they apply to, are as follows.</simpara>
+<simpara><emphasis role="strong"><literal>Mono-spaced Bold</literal></emphasis></simpara>
+<simpara>Used to highlight system input, including shell commands, file names and paths. Also used to highlight keycaps and key combinations. For example:</simpara>
+<simpara>To see the contents of the file <emphasis>my_next_bestselling_novel</emphasis> in your current working directory, enter the <emphasis>cat my_next_bestselling_novel</emphasis> command at the shell prompt and press Enter to execute the command.</simpara>
+<simpara>The above includes a file name, a shell command and a keycap, all presented in mono-spaced bold and all distinguishable thanks to context.</simpara>
+<simpara>Key combinations can be distinguished from keycaps by the hyphen connecting each part of a key combination. For example:</simpara>
+<simpara>Press <emphasis role="strong">Enter</emphasis> to execute the command.</simpara>
+<simpara>Press <emphasis role="strong">Ctrl-Alt-F1</emphasis> to switch to the first virtual terminal. Press <emphasis role="strong">Ctrl-Alt-F7</emphasis> to return to your X-Windows session.</simpara>
+<simpara>The first paragraph highlights the particular keycap to press. The second highlights two key combinations (each a set of three keycaps with each set pressed simultaneously).</simpara>
+<simpara>If source code is discussed, class names, methods, functions, variable names and returned values mentioned within a paragraph will be presented as above, in <literal>mono-spaced bold</literal>. For example:</simpara>
+<simpara>File-related classes include filesystem for file systems, file for files, and dir for directories. Each class has its own associated set of permissions.</simpara>
+<simpara><emphasis role="strong"><literal>Proportional Bold</literal></emphasis></simpara>
+<simpara>This denotes words or phrases encountered on a system, including application names; dialog box text; labeled buttons; check-box and radio button labels; menu titles and sub-menu titles. For example:</simpara>
+<simpara>Choose System &#8594; Preferences &#8594; Mouse from the main menu bar to launch Mouse Preferences. In the Buttons tab, click the Left-handed mouse check box and click Close to switch the primary mouse button from the left to the right (making the mouse suitable for use in the left hand).</simpara>
+<simpara>To insert a special character into a gedit file, choose ApplicationsAccessoriesCharacter Map from the main menu bar. Next, choose SearchFind… from the Character Map menu bar, type the name of the character in the Search field and click Next. The character you sought will be highlighted in the Character Table. Double-click this highlighted character to place it in the Text to copy field and then click the Copy button. Now switch back to your document and choose EditPaste from the gedit menu bar.</simpara>
+<simpara>The above text includes application names; system-wide menu names and items; application-specific menu names; and buttons and text found within a GUI interface, all presented in proportional bold and all distinguishable by context.</simpara>
+<simpara><emphasis><emphasis role="strong"><literal>Mono-spaced Bold Italic</literal></emphasis></emphasis> or <emphasis><emphasis role="strong"><literal>Proportional Bold Italic</literal></emphasis></emphasis></simpara>
+<simpara>Whether mono-spaced bold or proportional bold, the addition of italics indicates replaceable or variable text. Italics denotes text you do not input literally or displayed text that changes depending on circumstance. For example:</simpara>
+<simpara>To connect to a remote machine using ssh, type <emphasis>ssh <ulink url="mailto:username@domain">username@domain</ulink>.name</emphasis> at a shell prompt. If the remote machine is <emphasis>example.com</emphasis> and your username on that machine is john, type <emphasis>ssh <ulink url="mailto:john@example">john@example</ulink>.com</emphasis>.</simpara>
+<simpara>The <emphasis>mount -o remount file-system</emphasis> command remounts the named file system. For example, to remount the <emphasis>/home</emphasis> file system, the command is <emphasis>mount -o remount /home</emphasis>.</simpara>
+<simpara>To see the version of a currently installed package, use the <emphasis>rpm -q package</emphasis> command. It will return a result as follows: <emphasis>package-version-release</emphasis>.</simpara>
+<simpara>Note the words in bold italics above — username, domain.name, file-system, package, version and release. Each word is a placeholder, either for text you enter when issuing a command or for text displayed by the system.</simpara>
+<simpara>Aside from standard usage for presenting the title of a work, italics denotes the first use of a new and important term. For example:</simpara>
+<simpara>Publican is a DocBook publishing system.</simpara>
+</section>
+<section id="_pull_quote_conventions">
+<title>Pull-quote Conventions</title>
+<simpara>Terminal output and source code listings are set off visually from the surrounding text.</simpara>
+<simpara>Output sent to a terminal is set in mono-spaced roman and presented thus:</simpara>
+<screen>books        Desktop   documentation  drafts  mss    photos   stuff  svn
+books_tests  Desktop1  downloads      images  notes  scripts  svgs</screen>
+<simpara>Source-code listings are also set in mono-spaced roman but add syntax highlighting as follows:</simpara>
+<programlisting language="Java" linenumbering="unnumbered">package org.jboss.book.jca.ex1;
+
+import javax.naming.InitialContext;
+
+public class ExClient
+{
+   public static void main(String args[])
+       throws Exception
+   {
+      InitialContext iniCtx = new InitialContext();
+      Object         ref    = iniCtx.lookup("EchoBean");
+      EchoHome       home   = (EchoHome) ref;
+      Echo           echo   = home.create();
+
+      System.out.println("Created Echo");
+
+      System.out.println("Echo.echo('Hello') = " + echo.echo("Hello"));
+   }
+}</programlisting>
+</section>
+<section id="_notes_and_warnings">
+<title>Notes and Warnings</title>
+<simpara>Finally, we use three visual styles to draw attention to information that might otherwise be overlooked.</simpara>
+<note>
+<simpara>Notes are tips, shortcuts or alternative approaches to the task at hand. Ignoring a note should have no negative consequences, but you might miss out on a trick that makes your life easier.</simpara>
+</note>
+<important>
+<simpara>Important boxes detail things that are easily missed: configuration changes that only apply to the current session, or services that need restarting before an update will apply. Ignoring a box labeled <emphasis>Important</emphasis> won&#8217;t cause data loss but may cause irritation and frustration.</simpara>
+</important>
+<warning>
+<simpara>Warnings should not be ignored. Ignoring warnings will most likely cause data loss.</simpara>
+</warning>
+</section>
+</section>
+<section id="_we_need_feedback">
+<title>We Need Feedback!</title>
+<simpara>If you find a typographical error in this manual, or if you have thought of a way to make this manual better, we would love to hear from you! Please submit a report in JIRA: <ulink url="http://jira.jboss.org/">http://jira.jboss.org/</ulink> against the project Snowdrop and component <emphasis>Documentation</emphasis>.</simpara>
+<simpara>When submitting a bug report, be sure to mention the manual&#8217;s identifier: Snowdrop  1.2 User Guide.</simpara>
+<simpara>If you have a suggestion for improving the documentation, try to be as specific as possible when describing it. If you have found an error, please include the section number and some of the surrounding text so we can find it easily.</simpara>
+</section>
+</section>
+<section id="_what_this_guide_covers">
+<title>What This Guide Covers</title>
+<simpara>Snowdrop is a utility package that contains JBoss-specific extensions to the Spring Framework. These extensions are either:</simpara>
+<itemizedlist>
+<listitem>
+<simpara>
+extensions to Spring Framework classes that can be used wherever the generic implementations provided by the framework do not integrate correctly with JBoss AS.
+</simpara>
+</listitem>
+<listitem>
+<simpara>
+extensions for deploying and running Spring applications with  JBoss AS.
+</simpara>
+</listitem>
+</itemizedlist>
+<simpara>This user guide aims to cover the functionality of Snowdrop, to describe its components, and to provide information on how to use it optimally for running Spring applications in JBoss AS.</simpara>
+<important>
+<title>Supported Spring Version</title>
+<simpara>Snowdrop 2.0 and subsequent micro-release versions (2.0.1, 2.0.2, etc.) should be used with Spring 2.5 (preferred version being Spring 2.5.6.SEC03) or Spring 3.0 (preferred version being 3.0.6.RELEASE and above). Later Spring versions (3.1, 3.2. etc.) may be compatible with Snowdrop 2.0 as long as they maintain binary compatibility with Spring 3.0. In such cases, the instructions regarding Spring 3.0 apply to Spring 3.1 and later as well.</simpara>
+</important>
+<important>
+<title>Supported JBoss Version</title>
+<simpara>Snowdrop 2.0 and subsequent micro-release versions (2.0.1, 2.0.2, etc.) should be used with JBoss AS 5.x, JBoss AS 6.x or JBoss AS 7.x.</simpara>
+</important>
+</section>
+<section id="_introduction">
+<title>Introduction</title>
+<section id="_package_structure">
+<title>Package Structure</title>
+<simpara>The Snowdrop distribution contains two types of artifacts:</simpara>
+<variablelist>
+<varlistentry>
+<term>
+Utility archives
+</term>
+<listitem>
+<simpara>
+Libraries that contain utility classes and can be packaged in applications
+</simpara>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term>
+Server-side components
+</term>
+<listitem>
+<simpara>
+Pre-packaged components that can be installed in the application server as deployers (JBoss AS5, JBoss AS6) or subsystems (JBoss AS7).
+</simpara>
+</listitem>
+</varlistentry>
+</variablelist>
+<simpara>The server-side components may include some of the utility libraries, where they are needed by the deployer or, respectively, subsystem.</simpara>
+<simpara>Snowdrop provides the following utility libraries:</simpara>
+<variablelist>
+<varlistentry>
+<term>
+<emphasis>snowdrop-vfs.jar</emphasis>
+</term>
+<listitem>
+<simpara>
+A library that contains the support classes for resource scanning (scanning the classpath for bean definitions, or using "classpath*:"-style patterns).
+</simpara>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term>
+<emphasis>snowdrop-weaving.jar</emphasis>
+</term>
+<listitem>
+<simpara>
+A library that contains the support classes for load-time weaving.
+</simpara>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term>
+<emphasis>snowdrop-deployers.jar</emphasis>
+</term>
+<listitem>
+<simpara>
+Contains utility classes used internally by the Spring deployer. It is not intended for direct use by developers.
+</simpara>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term>
+<emphasis>snowdrop-namespace.jar</emphasis>
+</term>
+<listitem>
+<simpara>
+Custom namespace for easier configuration of beans that need access to JBoss internals (JMX server locator, JCA activation spec and resource adapter for JMS endpoints)
+</simpara>
+</listitem>
+</varlistentry>
+</variablelist>
+<simpara>Snowdrop provides the following pre-packaged deployers and subsystems:</simpara>
+<variablelist>
+<varlistentry>
+<term>
+<emphasis>jboss-spring-deployer-as5.zip</emphasis>
+</term>
+<listitem>
+<simpara>
+This is a packaged distribution of the Spring deployer for JBoss AS5, which bootstraps and registers the application contexts to be used by your Java EE applications.
+</simpara>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term>
+<emphasis>jboss-spring-deployer-as6.zip</emphasis>
+</term>
+<listitem>
+<simpara>
+This is a packaged distribution of the Spring deployer for JBoss AS6, which bootstraps and registers the application contexts to be used by your Java EE applications.
+</simpara>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term>
+<emphasis>jboss-spring-subsystem-as7.zip</emphasis>
+</term>
+<listitem>
+<simpara>
+This is a packaged distribution of the Spring subsystem for JBoss AS7, which bootstraps and registers the application contexts to be used by your Java EE applications.
+</simpara>
+</listitem>
+</varlistentry>
+</variablelist>
+</section>
+</section>
+<section id="_component_usage">
+<title>Component usage</title>
+<simpara>This chapter details how to use each of the components included in Snowdrop.</simpara>
+<section id="_vfs_enabled_application_contexts">
+<title>VFS-enabled Application Contexts</title>
+<note>
+<simpara>From Spring 3.0 onward, the ApplicationContext implementations shipped with the Spring framework are VFS-compatible. The components described in this section are included with Snowdrop to provide backwards compatibility, but are not necessarily required.</simpara>
+</note>
+<simpara>The <emphasis>snowdrop-vfs.jar</emphasis> library supports resource scanning in the JBoss Virtual File System (VFS). It must be included in Spring-based applications that use classpath and resource scanning.</simpara>
+<simpara>When the Spring framework performs resource scanning, it assumes that resources are either from a directory or a packaged JAR, and treats any URLs it encounters accordingly.</simpara>
+<simpara>This assumption is not correct for the JBoss VFS, so Snowdrop provides a different underlying resource resolution mechanism by amending the functionality of the PathMatchingResourcePatternResolver.</simpara>
+<simpara>This is done by using one of two ApplicationContext implementations provided by <emphasis>snowdrop-vfs.jar</emphasis>:</simpara>
+<variablelist>
+<varlistentry>
+<term>
+org.jboss.spring.vfs.context.VFSClassPathXmlApplicationContext
+</term>
+<listitem>
+<simpara>
+Replaces the Spring  org.springframework.context.support.ClassPathXmlApplicationContext.
+</simpara>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term>
+org.jboss.spring.vfs.context.VFSXmlWebApplicationContext
+</term>
+<listitem>
+<simpara>
+Replaces the Spring org.springframework.web.context.support.XmlWebApplicationContext.
+</simpara>
+</listitem>
+</varlistentry>
+</variablelist>
+<simpara>In many cases, the  VFSClassPathXmlApplicationContext is instantiated on its own, using something like:</simpara>
+<programlisting language="Java" linenumbering="unnumbered">ApplicationContext context =
+new VFSClassPathXmlApplicationContext("classpath:/context-definition-file.xml");</programlisting>
+<simpara>The XmlWebApplicationContext is not  instantiated directly. Instead, it is bootstrapped by either the  ContextLoaderListener or the  DispatcherServlet. Both classes have  configuration options that allow users to replace the default application context type with a custom application context type.</simpara>
+<simpara>To change the type of application context created by the ContextLoaderListener, add the  contextClass parameter as shown in the following example code:</simpara>
+<programlisting language="xml" linenumbering="unnumbered">&lt;programlisting language="XML" format="linespecific"&gt;&lt;context-param&gt;
+  &lt;param-name&gt;contextConfigLocation&lt;/param-name&gt;
+  &lt;param-value&gt;classpath*:spring-contexts/*.xml&lt;/param-value&gt;
+&lt;/context-param&gt;
+&lt;emphasis role="bold"&gt;&lt;context-param&gt;
+  &lt;param-name&gt;contextClass&lt;/param-name&gt;
+  &lt;param-value&gt;
+    org.jboss.spring.vfs.context.VFSXmlWebApplicationContext
+  &lt;/param-value&gt;
+&lt;/context-param&gt;&lt;/emphasis&gt;
+&lt;listener&gt;
+  &lt;listener-class&gt;
+    org.springframework.web.context.ContextLoaderListener
+  &lt;/listener-class&gt;
+&lt;/listener&gt;&lt;/programlisting&gt;</programlisting>
+<simpara>To change the type of application context created by the DispatcherServlet, use the same  contextClass parameter on the  DispatcherServlet definition as shown:</simpara>
+<programlisting language="xml" linenumbering="unnumbered">&lt;servlet&gt;
+  &lt;servlet-name&gt;spring-mvc-servlet&lt;/servlet-name&gt;
+  &lt;servlet-class&gt;org.springframework.web.servlet.DispatcherServlet&lt;/servlet-class&gt;
+  &lt;init-param&gt;
+    &lt;param-name&gt;contextConfigLocation&lt;/param-name&gt;
+    &lt;param-value&gt;/WEB-INF/mvc-config.xml&lt;/param-value&gt;
+  &lt;/init-param&gt;&lt;emphasis role="bold"&gt;
+  &lt;init-param&gt;
+  &lt;param-name&gt;contextClass&lt;/param-name&gt;
+    &lt;param-value&gt;
+      org.jboss.spring.vfs.context.VFSXmlWebApplicationContext
+    &lt;/param-value&gt;
+  &lt;/init-param&gt;
+&lt;/emphasis&gt;&lt;/servlet&gt;&lt;/programlisting&gt;</programlisting>
+<important><simpara>ZipException: If you encounter the ZipException when attempting to start the application, you need to replace the default ApplicationContext with one of the VFS-enabled implementations.</simpara></important>
+<screen>Caused by: java.util.zip.ZipException: error in opening zip file
+...
+at org.springframework.core.io.support.PathMatchingResourcePatternResolver
+.doFindPathMatchingJarResources(PathMatchingResourcePatternResolver.java:448)</screen>
+</section>
+<section id="_the_jboss_custom_namespace">
+<title>The JBoss custom namespace</title>
+<simpara>Starting with version 1.2, Snowdrop includes a custom Spring namespace for JBoss AS. The goals of this custom namespace is to simplify the development of Spring applications that run on JBoss, by reducing the amount of proprietary code and improving portability.</simpara>
+<simpara>The amount of proprietary code is reduced because of replacing bean definitions that include references to specific JBoss classes with namespace-based constructs. All the knowledge about the proprietary classes is encapsulated in the namespace handlers.</simpara>
+<simpara>The applications are more portable because certain proprietary classes may change when upgrading to a different version of the application server. In such cases, the runtime will be detected automatically by Snowdrop which will set up beans using the classes that are appropriate for that specific runtime.</simpara>
+<simpara>The custom namespace can be set up as follows:</simpara>
+<programlisting language="XML" linenumbering="unnumbered">&lt;beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:jboss="http://www.jboss.org/schema/spring"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+       http://www.jboss.org/schema/snowdrop http://www.jboss.org/schema/snowdrop/snowdrop.xsd"&gt;</programlisting>
+<section id="_accessing_the_default_jboss_mbean_server">
+<title>Accessing the default JBoss MBean Server</title>
+<simpara>The default MBean server of JBoss AS can be accessed as follows:</simpara>
+<programlisting language="XML" linenumbering="unnumbered">&lt;jboss:mbean-server/&gt;</programlisting>
+<simpara>The bean will be installed with the default id <emphasis>mbeanServer</emphasis>. If necessary, developers can specify a different bean name:</simpara>
+<programlisting language="XML" linenumbering="unnumbered">&lt;jboss:mbean-server id="customName"/&gt;</programlisting>
+</section>
+<section id="_jca_jms_support_beans">
+<title>JCA/JMS support beans</title>
+<simpara>Spring JMS message listeners (including message-driven POJOs) can use a JCA-based MessageListenerContainer. The configuration of a JCA-based listener container in Spring requires the setup of a number of beans based on application-server specific classes. Using the JBoss custom namespace, the ResourceAdapter and ActivationSpec configuration can be set up as follows:</simpara>
+<programlisting language="XML" linenumbering="unnumbered">    &lt;jboss:activation-spec-factory id="activationSpecFactory" subscriptionName="jca-example" useDLQ="false"/&gt;
+
+    &lt;jboss:resource-adapter id="resourceAdapter"/&gt;</programlisting>
+<simpara>which can be further used in a JCA message listener configuration:</simpara>
+<programlisting language="XML" linenumbering="unnumbered">&lt;jms:jca-listener-container resource-adapter="resourceAdapter" acknowledge="auto"
+                               activation-spec-factory="activationSpecFactory"&gt;
+       &lt;jms:listener destination="/someDestination" ref="messageDrivenPojo"
+                     method="pojoHandlerMethod"/&gt;
+&lt;/jms:jca-listener-container&gt;</programlisting>
+</section>
+</section>
+<section id="_load_time_weaving">
+<title>Load-time weaving</title>
+<note>
+<simpara>From Spring 3.0 onward, load-time weaving on JBoss AS 5 and JBoss AS 6 is supported out of the box. However, on JBoss AS7 it is necessary to use the load-time weaver provided by Snowdrop. The component described in this section should be used with Spring 2.5 on any of the servers or when using Spring 2.5 and Spring 3.0 with JBoss AS7. In other cases, it is optional, but can be used to facilitate backwards compatibility.</simpara>
+</note>
+<simpara>Load-time weaving support is provided by the  <emphasis>snowdrop-weaving.jar</emphasis> library.</simpara>
+<simpara>To perform load-time weaving for the application classes in Spring (either for using load-time support for AspectJ or for JPA support), the Spring framework needs to install its own transformers in the classloader. For JBoss Enterprise Application Platform, JBoss Enterprise Web Platform and JBoss Enterprise Web Server,  a classloader-specific LoadTimeWeaver is necessary.</simpara>
+<simpara>Define the JBossLoadTimeWeaver in the Spring application context as shown here:</simpara>
+<programlisting language="Java" linenumbering="unnumbered">&lt;context:load-time-weaver weaver-class="org.jboss.instrument.classloading.JBossLoadTimeWeaver"/&gt;</programlisting>
+</section>
+<section id="_the_spring_deployer">
+<title>The Spring Deployer</title>
+<simpara>The Spring deployer allows you to bootstrap a Spring application context, bind it in JNDI, and use it to provide Spring-configured business object instances.</simpara>
+<section id="_jboss_spring_ejb_3_0_integration">
+<title>JBoss + Spring + EJB 3.0 Integration</title>
+<simpara>Snowdrop contains a JBoss deployer that supports Spring packaging in JBoss AS. This means that it is possible to create JAR archives with a <emphasis>META-INF/jboss-spring.xml</emphasis> file to have your Spring bean factories deploy automatically.</simpara>
+<simpara>EJB 3.0 integration is also supported. You can deploy Spring archives and inject beans created in these deployments directly into an EJB by using the @Spring annotation.</simpara>
+</section>
+<section id="_spring_deployer_installation">
+<title>Spring Deployer Installation</title>
+<section id="_installation_on_jboss_as_5_and_jboss_as_6">
+<title>Installation on JBoss AS 5 and JBoss AS 6</title>
+<simpara>To install the Spring deployer, unzip the deployer archive in the <emphasis>$JBOSS_HOME/server/$PROFILE/deployers</emphasis> directory of your JBoss Application Server installation.</simpara>
+<simpara>The Snowdrop Spring deployer requires the inclusion of the Spring libraries. If you are installing a version without dependencies or you want to include your own Spring version, you must ensure that you are including one of the following sets of Spring libraries in the <emphasis>$JBOSS_HOME/server/$PROFILE/deployers/spring.deployer</emphasis> folder.</simpara>
+<simpara>Please include at least the following jars from either the Spring 2.5.6.SEC03 or Spring 3.0.6.RELEASE distribution:</simpara>
+<itemizedlist>
+<listitem>
+<simpara>
+spring-beans.jar (or org.springframework.beans.jar)
+</simpara>
+</listitem>
+<listitem>
+<simpara>
+spring-context.jar (org.springframework.context.jar)
+</simpara>
+</listitem>
+<listitem>
+<simpara>
+spring-core.jar (or org.springframework.core.jar)
+</simpara>
+</listitem>
+<listitem>
+<simpara>
+spring-web.jar (or org.springframework.web.jar)
+</simpara>
+</listitem>
+</itemizedlist>
+</section>
+<section id="_installation_on_jboss_as_7">
+<title>Installation on JBoss AS 7</title>
+<simpara>To install the Snowdrop Deployment subsystem, unzip the <emphasis>jboss-spring-subsystem-as7.zip</emphasis> file. Create the subsystem and Spring modules in JBoss AS7 by copying  the contents of the <emphasis>module-deployer</emphasis> folder and one of the <emphasis>module-spring-2.5</emphasis> or <emphasis>spring-3</emphasis> folders in the <emphasis>$JBOSS_HOME/modules</emphasis> directory of your JBoss Application Server installation.</simpara>
+<simpara>The above step will create two modules inside JBoss AS7:</simpara>
+<variablelist>
+<varlistentry>
+<term>
+org.jboss.snowdrop:main
+</term>
+<listitem>
+<simpara>
+The module that contains the JBoss AS7 subsystem proper
+</simpara>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term>
+org.springframework.spring:snowdrop
+</term>
+<listitem>
+<simpara>
+A module that contains the Spring JARs that are required by Snowdrop. It can contain Spring 2.5 or Spring 3 JARs, dependending the which of the two modules has been copied in the step above. Users may add other JARs to the module, case in which they need to adjust the <emphasis>module.xml</emphasis> file accordingly. It is a dependency of org.jboss.snowdrop:main
+</simpara>
+</listitem>
+</varlistentry>
+</variablelist>
+<simpara>If you are using the distribution without dependencies, or you wish to create your own version of the Spring module, then create a <emphasis>$JBOSS_HOME/modules/org/springframework/spring/main</emphasis> directory and copy one of the two <emphasis>module.xml</emphasis> files (from either the <emphasis>module-spring-2.5</emphasis> or the <emphasis>module-spring-3</emphasis> directory of the distribution and copy one of the following sets of files from the corresponding Spring distribution (either Spring 2.5.6.SEC03 or Spring 3.0.6.RELEASE).</simpara>
+<simpara>For Spring 2.5:</simpara>
+<itemizedlist>
+<listitem>
+<simpara>
+aspectjrt.jar
+</simpara>
+</listitem>
+<listitem>
+<simpara>
+aspectjweaver.jar
+</simpara>
+</listitem>
+<listitem>
+<simpara>
+aopalliance.jar
+</simpara>
+</listitem>
+<listitem>
+<simpara>
+spring-aop.jar
+</simpara>
+</listitem>
+<listitem>
+<simpara>
+spring-beans.jar
+</simpara>
+</listitem>
+<listitem>
+<simpara>
+spring-core.jar
+</simpara>
+</listitem>
+<listitem>
+<simpara>
+spring-context.jar
+</simpara>
+</listitem>
+<listitem>
+<simpara>
+spring-context-support.jar
+</simpara>
+</listitem>
+<listitem>
+<simpara>
+spring-web.jarFor Spring 3:
+</simpara>
+</listitem>
+<listitem>
+<simpara>
+aspectjrt.jar
+</simpara>
+</listitem>
+<listitem>
+<simpara>
+aspectjweaver.jar
+</simpara>
+</listitem>
+<listitem>
+<simpara>
+aopalliance.jar
+</simpara>
+</listitem>
+<listitem>
+<simpara>
+spring-aop.jar
+</simpara>
+</listitem>
+<listitem>
+<simpara>
+spring-asm.jar
+</simpara>
+</listitem>
+<listitem>
+<simpara>
+spring-beans.jar
+</simpara>
+</listitem>
+<listitem>
+<simpara>
+spring-core.jar
+</simpara>
+</listitem>
+<listitem>
+<simpara>
+spring-expression.jar
+</simpara>
+</listitem>
+<listitem>
+<simpara>
+spring-context.jar
+</simpara>
+</listitem>
+<listitem>
+<simpara>
+spring-context-support.jar
+</simpara>
+</listitem>
+<listitem>
+<simpara>
+spring-web.jar
+</simpara>
+</listitem>
+</itemizedlist>
+<simpara>The final step in the installation is to change <emphasis>$JBOSS_HOME/standalone/configuration/standalone.xml</emphasis> by including <literal>&lt;extension module="org.jboss.snowdrop"/&gt;</literal> inside the <literal>&lt;extensions&gt;</literal> element, as well as including <literal>&lt;subsystem xmlns="urn:jboss:domain:snowdrop:1.0"/&gt;</literal> inside the <literal>&lt;profile&gt;</literal> element.</simpara>
+</section>
+</section>
+<section id="_spring_deployments">
+<title>Spring deployments</title>
+<simpara>You can create Spring deployments that work similarly to JARs, EARs, and WARs with the JBoss Spring deployer. Spring JARs are created with the following  structure:</simpara>
+<screen>my-app.spring/
+  org/
+    acme/
+      MyBean.class
+      MyBean2.class
+  META-INF/
+    jboss-spring.xml</screen>
+<simpara><emphasis>my-app.spring</emphasis> is a JAR that contains classes. A <emphasis>jboss-spring.xml</emphasis> file exists in the  <emphasis>META-INF</emphasis> directory of the JAR. By default, the JBoss Spring deployer registers the bean factory defined in  <emphasis>jboss-spring.xml</emphasis> into JNDI in a non-serialized form. The default JNDI name is the short name of the deployment file — in this case, <literal>my-app</literal>.</simpara>
+<simpara>You can also place JAR libraries under <emphasis>$JBOSS_HOME/server/$PROFILE/lib</emphasis> and add an XML file of the form <literal>&lt;name&gt;-spring.xml</literal>, for example, <emphasis>my-app-spring.xml</emphasis>, into the <emphasis>deploy</emphasis> directory of your JBoss Enterprise Application Platform or JBoss Enterprise Web Platform installation. The default JNDI name will be the short name of the XML file; in this case, <literal>my-app</literal>.</simpara>
+</section>
+<section id="_deployment">
+<title>Deployment</title>
+<simpara>Once you have created a <emphasis>.spring</emphasis> or a <emphasis>-spring.xml</emphasis> file, copy it into the <emphasis>deploy</emphasis> directory of your JBoss AS installation to deploy it into the JBoss runtime. You can also embed these deployments in an EAR, EJB-SAR, SAR, and so on, since JBoss AS supports nested archives.</simpara>
+</section>
+<section id="_defining_the_jndi_name">
+<title>Defining the JNDI name</title>
+<simpara>You can specify the JNDI name explicitly by putting it in the description element of the Spring XML.</simpara>
+<programlisting language="XML" linenumbering="unnumbered">&lt;beans&gt;
+  &lt;description&gt;BeanFactory=(MyApp)&lt;/description&gt;
+  ...
+  &lt;bean id="springBean" class="example.SpringBean"/&gt;
+&lt;/beans&gt;</programlisting>
+<simpara><literal>MyApp</literal> will be used as the JNDI name in this example.</simpara>
+</section>
+<section id="_parent_bean_factories">
+<title>Parent Bean factories</title>
+<simpara>Sometimes you want your deployed Spring bean factory to be able to reference beans deployed in another Spring deployment. You can do this by declaring a parent bean factory in the description element in the Spring XML, like so:</simpara>
+<programlisting language="XML" linenumbering="unnumbered">&lt;beans&gt;
+&lt;description&gt;BeanFactory=(AnotherApp) ParentBeanFactory=(MyApp)&lt;/description&gt;
+...
+&lt;/beans&gt;</programlisting>
+</section>
+<section id="_injection_into_ejbs">
+<title>Injection into EJBs</title>
+<simpara>Once an ApplicationContext has been successfully bootstrapped, the Spring beans defined in it can be used for injection into EJBs. To do this, the EJBs must be intercepted with the SpringLifecycleInterceptor, as in the following example:</simpara>
+<programlisting language="Java" linenumbering="unnumbered">@Stateless
+@Interceptors(SpringLifecycleInterceptor.class)
+public class InjectedEjbImpl implements InjectedEjb
+{
+ @Spring(bean = "springBean", jndiName = "MyApp")
+ private SpringBean springBean;
+
+ /* rest of the class definition ommitted */
+}</programlisting>
+<simpara>In this example, the EJB InjectedEjbImpl will be  injected with the bean named <literal>springBean</literal>, which is defined in the ApplicationContext.</simpara>
+</section>
+</section>
+</section>
+<section id="_revision_history">
+<title>Revision History</title>
+<simpara>0.1-0 Tue May 18 2010 Laura Bailey <ulink url="mailto:lbailey@redhat.com">lbailey@redhat.com</ulink> Converted book to Publican format.</simpara>
+</section>
+</article>
