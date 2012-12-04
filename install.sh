@@ -1,4 +1,4 @@
-ipaddr=$(/sbin/ifconfig | grep '\<inet\>' | sed -n '1p' | tr -s ' ' | cut -d ' ' -f3 | cut -d ':' -f2)
+ipaddr=$(ifconfig  | grep 'inet addr:'| grep -v '127.0.0.1' | cut -d: -f2 | awk '{ print $1}')
 /$JBOSS_HOME/bin/jboss-cli.sh --controller=$ipaddr:9999 -c
 if [ $? == 0 ]
 then
