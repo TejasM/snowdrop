@@ -92,9 +92,9 @@ def springDependencies31 = [
 	[group:'org.springframework', name:'spring-aop', version: versions.spring31],
 	[group:'org.springframework', name:'spring-asm', version: versions.spring31],
 	[group:'org.springframework', name:'spring-beans', version: versions.spring31],
-	[group:'org.springframework', name:'spring-context-support', version: versions.spring3],
-	[group:'org.springframework', name:'spring-expression', version: versions.spring3],
-	[group:'org.springframework', name:'spring-web', version: versions.spring3],
+	[group:'org.springframework', name:'spring-context-support', version: versions.spring31],
+	[group:'org.springframework', name:'spring-expression', version: versions.spring31],
+	[group:'org.springframework', name:'spring-web', version: versions.spring31],
 ]
 
 repositories {
@@ -115,68 +115,16 @@ dependencies{
 	xslt group:'net.sf.saxon', name:'saxon', version:versions.saxon 
 
 }
-task installSpring (type: Copy){
+
+task install() {
 	onlyIf{"$System.env.JBOSS_HOME"!=""}
-	jbossHome = "$System.env.JBOSS_HOME"
-	from configurations.snowdropDependencies.copy().setTransitive(false)
-	rename { name ->
-	  def artifacts = configurations.snowdropDependencies.resolvedConfiguration.resolvedArtifacts 
-	  def artifact = artifacts.find { it.file.name == name }
-	  "${artifact.name}.${artifact.extension}"
-	}
-	into jbossHome + '/modules/org/springframework/spring/snowdrop'
-	include '**/*.jar', '**/*.xml'
 }
 
-installSpring.doFirst {
-	println ''
-	ant.input(message: 'Which version of Spring do you want to install?', validargs: '2.5,3,3.1,n', addproperty: 'springVersion')
-	if(ant.springVersion == '2.5') {
-		println 'Installing 2.5'
-		dependencies{
-			snowdropDependencies springDependencies25
-		}
-	}
-	else if(ant.springVersion == '3') {
-		println 'Installing 3'
-		dependencies{
-			snowdropDependencies springDependencies3
-		}	
-	}
-	else if(ant.springVersion == '3.1') {
-		println 'Installing 3.1'
-		dependencies{
-			snowdropDependencies springDependencies31
-		}
-	}
-	else if(ant.springVersion == 'n') {
-		throw new StopExecutionException("Not installing Spring Dependencies")
-	}
-	
-	from configurations.snowdropDependencies.copy().setTransitive(false)
+install.doLast {
+	tasks.installSpring.execute()
 }
 
-installSpring.doLast {
-	ant.xslt(in: jbossHome + '/standalone/configuration/standalone.xml', style: 'install.xml',
-			 out:   jbossHome + '/standalone/configuration/standalone-new.xml',
-			 classpath: configurations.xslt.asPath)
-	copy{
-		from jbossHome + '/standalone/configuration/standalone-new.xml'
-		into jbossHome + '/standalone/configuration/'
-		rename { String fileName ->
-			'standalone.xml'
-		}
-	}
-	ant.input(message: 'Do you want to config the snowdrop install in domain mode?', validargs: 'yes,no', addproperty: 'config')
-	
-	if (ant.config == 'yes'){
-		exec {
-			commandLine './install.sh'
-		}
-	}
-}
-
-
+install.dependsOn(':vfs:copyPackages', ':subsystem-as7:subsystem-as7:copyPackages', ':deployers:deployers-core:copyPackages')
 
 subprojects {
 	
@@ -184,13 +132,12 @@ subprojects {
     apply plugin: 'idea'
 	
 	//Install Task
-	task install(dependsOn: [build, installSpring], type: Copy) {
+	task copyPackages(dependsOn: [build], type: Copy) {
 		onlyIf{"$System.env.JBOSS_HOME"!=""}
 		jbossHome = "$System.env.JBOSS_HOME"
 		from 'build/libs'
 		into jbossHome + '/modules/org/jboss/snowdrop/main'
 		include '**/*.jar', '**/*.xml'
-		exclude 'snowdrop-facade.jar', 'snowdrop-weaving.jar', 'snowdrop-namespace.jar'
 	}
 	
     sourceCompatibility = 1.6
@@ -247,7 +194,7 @@ project(':subsystem-as7:subsystem-as7') {
 		compile group: 'org.jboss.as', name:'jboss-as-naming', version:versions.jbossAs7
 	}
 	
-	install {
+	copyPackages {
 		from 'build/libs', 'src/main/module'
 	}
 }
@@ -380,3 +327,73 @@ project(':facade') {
         compile springDependencies25
     }
 }
+
+task installSpring (dependsOn: [install]){
+	onlyIf{"$System.env.JBOSS_HOME"!=""}
+}
+
+installSpring.doFirst {
+	ant.input(message: 'Which version of Spring do you want to install?', validargs: '2.5,3,3.1,n', addproperty: 'springVersion')
+	if(ant.springVersion == '2.5') {
+		println 'Installing 2.5'
+		dependencies{
+			snowdropDependencies springDependencies25
+		}
+	}
+	else if(ant.springVersion == '3') {
+		println 'Installing 3'
+		dependencies{
+			snowdropDependencies springDependencies3
+		}	
+	}
+	else if(ant.springVersion == '3.1') {
+		println 'Installing 3.1'
+		dependencies{
+			snowdropDependencies springDependencies31
+		}
+	}
+	else if(ant.springVersion == 'n') {
+		throw new StopExecutionException("Not installing Spring Dependencies")
+	}
+	
+	
+	copy{
+		jbossHome = "$System.env.JBOSS_HOME"
+		from configurations.snowdropDependencies.copy().setTransitive(false)	
+		rename { name ->
+		  def artifacts = configurations.snowdropDependencies.resolvedConfiguration.resolvedArtifacts 
+		  def artifact = artifacts.find { it.file.name == name }
+		  "${artifact.name}.${artifact.extension}"
+		}
+		into jbossHome + '/modules/org/springframework/spring/snowdrop'
+		include '**/*.jar'
+	}
+	
+	copy {
+		jbossHome = "$System.env.JBOSS_HOME"
+		from 'subsystem-as7/modules/spring-' + ant.springVersion + '/src/main/module'
+		into jbossHome + '/modules/org/springframework/spring/snowdrop'
+		include '**/*.xml'
+	}
+}
+
+installSpring.doLast {
+	ant.xslt(in: jbossHome + '/standalone/configuration/standalone.xml', style: 'install.xml',
+			 out:   jbossHome + '/standalone/configuration/standalone-new.xml',
+			 classpath: configurations.xslt.asPath)
+	copy{
+		from jbossHome + '/standalone/configuration/standalone-new.xml'
+		into jbossHome + '/standalone/configuration/'
+		rename { String fileName ->
+			'standalone.xml'
+		}
+	}
+	ant.input(message: 'Do you want to config the snowdrop install in domain mode?', validargs: 'yes,no', addproperty: 'config')
+	
+	if (ant.config == 'yes'){
+		exec {
+			commandLine './install.sh'
+		}
+	}
+}
+

@@ -6,6 +6,3 @@ include 'weaving'
 include 'namespace'
 include 'facade'
 include 'subsystem-as7:subsystem-as7'
-/*include 'subsystem-as7:modules:modules:spring-3.1'
-include 'subsystem-as7:modules:modules:spring-3'
-include 'subsystem-as7:modules:modules:spring-2.5'*/
