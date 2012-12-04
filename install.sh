@@ -2,7 +2,6 @@ ipaddr=$(ifconfig  | grep 'inet addr:'| grep -v '127.0.0.1' | cut -d: -f2 | awk 
 /$JBOSS_HOME/bin/jboss-cli.sh --controller=$ipaddr:9999 -c
 if [ $? == 0 ]
 then
-	exit
 	/$JBOSS_HOME/bin/jboss-cli.sh --controller=$ipaddr:9999 -c /extension=org.jboss.snowdrop:add	
 	exit 0
 else
