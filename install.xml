@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+	version="1.0">
+
+	<xsl:output method="xml" encoding="utf-8" />
+
+	<xsl:template match="@*|node()">
+		<xsl:copy>
+			<xsl:apply-templates select="@*|node()" />
+		</xsl:copy>
+	</xsl:template>
+	
+	<xsl:template match="//*[local-name()='extensions']">
+		<extensions xmlns="urn:jboss:domain:1.2">
+			<xsl:apply-templates select="*[@module != 'org.jboss.snowdrop']" />
+			<extension module="org.jboss.snowdrop" />
+		</extensions>
+	</xsl:template>
+
+	<xsl:template match="//*[local-name()='profile']">
+		<profile xmlns="urn:jboss:domain:1.2">
+			<subsystem xmlns="urn:jboss:domain:snowdrop:1.0" />
+			<xsl:apply-templates select="*[@* != 'urn:jboss:domain:snowdrop:1.0']" />
+		</profile>
+	</xsl:template>
+</xsl:stylesheet>

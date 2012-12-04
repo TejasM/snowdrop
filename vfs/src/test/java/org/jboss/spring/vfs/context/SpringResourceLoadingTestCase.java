@@ -70,7 +70,7 @@ public class SpringResourceLoadingTestCase {
         VFSXmlWebApplicationContext context = new VFSXmlWebApplicationContext();
         context.setConfigLocations(new String[]{"classpath:/org/jboss/spring/vfs/context/spring-*.xml"});
         context.refresh();
-        String myBean = (String) context.getBean("myBean");
+//        String myBean = (String) context.getBean("myBean");
         Resource r = context.getResource("classpath:/spring-config/spring-app-config.xml");
         Assert.assertNotNull(r);
     }
