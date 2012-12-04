@@ -168,7 +168,6 @@ installSpring.doLast {
 		}
 	}
 	exec{
-		commandLine './startServer.sh &'
 		commandLine './install.sh'
 	}
 }
