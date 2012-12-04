@@ -167,8 +167,12 @@ installSpring.doLast {
 			'standalone.xml'
 		}
 	}
-	exec{
-		commandLine './install.sh'
+	ant.input(message: 'Do you want to config the snowdrop install in domain mode?', validargs: 'yes,no', addproperty: 'config')
+	
+	if (ant.config == 'yes'){
+		exec {
+			commandLine './install.sh'
+		}
 	}
 }
 

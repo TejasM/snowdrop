@@ -1,4 +1,5 @@
-/$JBOSS_HOME/bin/jboss-cli.sh -c
+ipaddr=$(/sbin/ifconfig | grep '\<inet\>' | sed -n '1p' | tr -s ' ' | cut -d ' ' -f3 | cut -d ':' -f2)
+/$JBOSS_HOME/bin/jboss-cli.sh --controller=$ipaddr:9999 -c
 if [ $? == 0 ]
 then
 	/$JBOSS_HOME/bin/jboss-cli.sh -c /extension=org.jboss.snowdrop:add	
