@@ -1,12 +1,14 @@
 ipaddr=$(ifconfig  | grep 'inet addr:'| grep -v '127.0.0.1' | cut -d: -f2 | awk '{ print $1}')
-$JBOSS_HOME/bin/jboss-cli.sh --controller=$ipaddr:9999 -c /extension=org.jboss.snowdrop:add	
+$JBOSS_HOME/bin/jboss-cli.sh --controller=$ipaddr:9999 -c version
 if [ $? == 0 ]
 then
+	$JBOSS_HOME/bin/jboss-cli.sh --controller=$ipaddr:9999 -c /extension=org.jboss.snowdrop:add	
 	exit 0
 else
-	$JBOSS_HOME/bin/jboss-cli.sh -c /extension=org.jboss.snowdrop:add
+	$JBOSS_HOME/bin/jboss-cli.sh -c version
 	if [ $? == 0 ]
 	then
+		$JBOSS_HOME/bin/jboss-cli.sh -c /extension=org.jboss.snowdrop:add
 		exit 0
 	else
 		echo "Starting Server"
