@@ -29,7 +29,7 @@ version='2.0.4.Final'
 versions = [jbossVfs3: '3.1.0.Final',jbossVfs2: '2.1.3.SP1', jbossMan: '2.1.0.GA',
 		jbossMdr: '2.2.0.Alpha1', jbossMdrVfs2: '2.0.2.GA', jbossKernel: '2.2.0.Alpha6',
 		jbossDeployers: '2.2.0.Alpha2',
-        jbossxb: '2.0.2.Beta4',
+		jbossxb: '2.0.2.Beta4',
 		jbossAop: '2.0.1.GA',
 		jbossPojocache: '3.0.0.GA',
 		jbossTest: '1.1.9.GA',
@@ -48,8 +48,8 @@ versions = [jbossVfs3: '3.1.0.Final',jbossVfs2: '2.1.3.SP1', jbossMan: '2.1.0.GA
 		spring25:'2.5.6.SEC02',
 		spring3:'3.0.6.RELEASE',
 		spring31:'3.1.0.RELEASE',
-        jbossLogging:'2.1.0.GA',
-        jbossClassloader: '2.2.0.Alpha3',
+		jbossLogging:'2.1.0.GA',
+		jbossClassloader: '2.2.0.Alpha3',
 		javaxServlet: '2.3',
 		jbossInvocation: '1.0.0.Final',
 		jbossReflect:'2.2.0.Alpha2',
@@ -99,7 +99,8 @@ def springDependencies31 = [
 
 repositories {
 	mavenCentral()
-	mavenRepo urls: 'https://repository.jboss.org/nexus/content/groups/public-jboss/'
+	mavenRepo urls: ['https://repository.jboss.org/nexus/content/groups/public-jboss/', 'https://repository.jboss.org/nexus/content/repositories/deprecated/']
+	
  }
 
 configurations{
@@ -112,52 +113,33 @@ dependencies{
 	snowdropDependencies group:'org.aspectj', name:'aspectjweaver', version:versions.aspectj
 	snowdropDependencies group:'aopalliance', name:'aopalliance', version:versions.aopalliance
 	snowdropDependencies group:'cglib', name:'cglib-nodep', version:'2.2.2'
-	xslt group:'net.sf.saxon', name:'saxon', version:versions.saxon 
+	xslt group:'net.sf.saxon', name:'saxon', version:versions.saxon
 
 }
-
-task install() {
-	onlyIf{"$System.env.JBOSS_HOME"!=""}
-}
-
-install.doLast {
-	tasks.installSpring.execute()
-}
-
-install.dependsOn(':vfs:copyPackages', ':subsystem-as7:subsystem-as7:copyPackages', ':deployers:deployers-core:copyPackages')
 
 subprojects {
 	
 	apply plugin: 'java'
-    apply plugin: 'idea'
+	apply plugin: 'idea'
 	
-	//Install Task
-	task copyPackages(dependsOn: [build], type: Copy) {
-		onlyIf{"$System.env.JBOSS_HOME"!=""}
-		jbossHome = "$System.env.JBOSS_HOME"
-		from 'build/libs'
-		into jbossHome + '/modules/org/jboss/snowdrop/main'
-		include '**/*.jar', '**/*.xml'
+	sourceCompatibility = 1.6
+	targetCompatibility = 1.6
+
+	repositories {
+	   mavenCentral()
+	   mavenRepo urls: 'https://repository.jboss.org/nexus/content/groups/public-jboss/'
 	}
-	
-    sourceCompatibility = 1.6
-    targetCompatibility = 1.6
 
-    repositories {
-       mavenCentral()
-       mavenRepo urls: 'https://repository.jboss.org/nexus/content/groups/public-jboss/'
-    }
-
-    configurations {
-        all*.exclude group:'trove'
+	configurations {
+		all*.exclude group:'trove'
 		jandex
 		
-    }
+	}
 
-    dependencies {
-        testCompile group:'junit', name:'junit', version:versions.junit
+	dependencies {
+		testCompile group:'junit', name:'junit', version:versions.junit
 		jandex group: 'org.jboss', name:'jandex', version:versions.jbossJandex
-    }
+	}
 }
 
 subprojects { project ->
@@ -165,12 +147,12 @@ subprojects { project ->
 }
 
 project(':vfs') {
-    dependencies {
-        compile group:'org.jboss', name:'jboss-vfs', version: versions.jbossVfs3
-        compile group:'org.jboss.logging', name:'jboss-logging-spi', version:versions.jbossLogging
-        compile group:'javax.servlet', name:'servlet-api', version:versions.javaxServlet
-        compile springDependencies25
-    }
+	dependencies {
+		compile group:'org.jboss', name:'jboss-vfs', version: versions.jbossVfs3
+		compile group:'org.jboss.logging', name:'jboss-logging-spi', version:versions.jbossLogging
+		compile group:'javax.servlet', name:'servlet-api', version:versions.javaxServlet
+		compile springDependencies25
+	}
 	
 	jar.doLast{
 		tasks.jandex.execute()
@@ -184,7 +166,7 @@ project(':vfs') {
 	}
 }
 
-project(':subsystem-as7:subsystem-as7') {	
+project(':subsystem-as7:subsystem-as7') {
 	dependencies{
 		compile project(':deployers:deployers-core')
 		compile project(':vfs')
@@ -193,18 +175,15 @@ project(':subsystem-as7:subsystem-as7') {
 		compile group: 'org.jboss.as', name:'jboss-as-server', version:versions.jbossAs7
 		compile group: 'org.jboss.as', name:'jboss-as-naming', version:versions.jbossAs7
 	}
-	
-	copyPackages {
-		from 'build/libs', 'src/main/module'
-	}
+
 }
 
 
 project(':weaving') {
-    dependencies {
-       compile group: 'org.jboss.cl', name: 'jboss-classloader', version:versions.jbossClassloader
-       compile project(':deployers:deployers-core')
-    }
+	dependencies {
+	   compile group: 'org.jboss.cl', name: 'jboss-classloader', version:versions.jbossClassloader
+	   compile project(':deployers:deployers-core')
+	}
 }
 
 project(':deployers:deployers-core') {
@@ -229,7 +208,7 @@ project(':deployers:deployers-core') {
 	}
 	
 	jar.doLast{
-		tasks.jandex.execute()		
+		tasks.jandex.execute()
 	}
 	
 	task jandex << {
@@ -240,9 +219,9 @@ project(':deployers:deployers-core') {
 	}
 }
 
-/*project(':deployers:deployers-vfs2') {
+project(':deployers:deployers-vfs2') {
 	dependencies {
-		compile springDependencies
+		compile springDependencies25
 		compile group: 'org.jboss.deployers', name: 'jboss-deployers-spi', version:versions.jbossDeployers
 		compile group: 'org.jboss', name: 'jboss-common-core', version:'2.2.17.GA'
 		compile group: 'org.jboss.deployers', name: 'jboss-deployers-structure-spi', version:versions.jbossDeployers
@@ -251,7 +230,7 @@ project(':deployers:deployers-core') {
 		compile group: 'org.jboss.javaee', name:'jboss-ejb-api', version: versions.javaee
 		compile group: 'org.jboss.invocation', name:'jboss-invocation', version: versions.jbossInvocation
 		compile group: 'org.jboss.aop', name: 'jboss-aop', version: versions.jbossAop
-		compile group: 'org.jboss.test', name: 'jboss-test', version: versions.jbossTest 
+		compile group: 'org.jboss.test', name: 'jboss-test', version: versions.jbossTest
 		compile group:'org.jboss', name: 'jboss-vfs', version:'2.1.3.SP1'
 		compile ('org.jboss.deployers:jboss-deployers-core-spi:2.2.0.Alpha2') {
 			transitive = false
@@ -262,10 +241,28 @@ project(':deployers:deployers-core') {
 		compile ('org.jboss.deployers:jboss-deployers-vfs-spi:2.0.8.SP1') {
 			transitive = false
 		}
+		compile ('org.jboss.deployers:jboss-deployers-vfs:2.0.8.SP1:tests@jar') {
+			transitive = false
+		}
 		compile ('org.jboss.deployers:jboss-deployers-vfs:2.0.8.SP1') {
 			transitive = false
 		}
-		compile ('org.jboss.deployers:jboss-deployers-structure-spi:2.2.0.Alpha2') {
+		compile ('org.jboss.deployers:jboss-deployers-structure-spi:2.0.8.SP1') {
+			transitive = false
+		}
+		compile ('org.jboss.microcontainer:jboss-kernel:2.0.7.GA'){
+			transitive = false
+		}
+		compile ('org.jboss.microcontainer:jboss-dependency:2.0.7.GA'){
+			transitive = false
+		}
+		compile ('org.jboss.deployers:jboss-deployers-impl:2.0.8.SP1'){
+			transitive = false
+		}
+		compile ('org.jboss.deployers:jboss-deployers-spi:2.0.8.SP1'){
+			transitive = false
+		}
+		compile ('org.jboss.cl:jboss-classloading:2.0.7.CR2'){
 			transitive = false
 		}
 	}
@@ -277,7 +274,7 @@ project(':deployers:deployers-core') {
 }
 project(':deployers:deployers-vfs3') {
 	dependencies {
-		compile springDependencies
+		compile springDependencies25
 		compile group: 'org.jboss.deployers', name: 'jboss-deployers-spi', version:versions.jbossDeployers
 		compile group: 'org.jboss', name: 'jboss-common-core', version:'2.2.17.GA'
 		compile group: 'org.jboss.deployers', name: 'jboss-deployers-structure-spi', version:versions.jbossDeployers
@@ -288,32 +285,34 @@ project(':deployers:deployers-vfs3') {
 		compile group: 'org.jboss.aop', name: 'jboss-aop', version: versions.jbossAop
 		compile group: 'org.jboss.test', name: 'jboss-test', version: versions.jbossTest
 		compile group:'org.jboss', name: 'jboss-vfs', version:'3.0.0.CR1'
-        compile ('org.jboss.deployers:jboss-deployers-core-spi:2.2.0.Alpha2') {
-            transitive = false
-        }
-        compile ('org.jboss.deployers:jboss-deployers-spi:2.2.0.Alpha2') {
-            transitive = false
-        }
-        compile ('org.jboss.deployers:jboss-deployers-vfs-spi:2.2.0.Alpha2') {
-            transitive = false
-        }
-        compile ('org.jboss.deployers:jboss-deployers-vfs:2.2.0.Alpha2') {
-            transitive = false
-        }
-        compile ('org.jboss.deployers:jboss-deployers-structure-spi:2.2.0.Alpha2') {
-            transitive = false
-        }
+		compile ('org.jboss.deployers:jboss-deployers-core-spi:2.2.0.Alpha2') {
+			transitive = false
+		}
+		compile ('org.jboss.deployers:jboss-deployers-spi:2.2.0.Alpha2') {
+			transitive = false
+		}
+		compile ('org.jboss.deployers:jboss-deployers-vfs-spi:2.2.0.Alpha2') {
+			transitive = false
+		}
+		compile ('org.jboss.deployers:jboss-deployers-vfs:2.2.0.Alpha2:tests@jar') {
+			transitive = false
+		}
+		compile ('org.jboss.deployers:jboss-deployers-vfs:2.2.0.Alpha2') {
+			transitive = false
+		}
+		compile ('org.jboss.deployers:jboss-deployers-structure-spi:2.2.0.Alpha2') {
+			transitive = false
+		}
 	}
-
 	// exl
 	configurations.compile.dependencies.each { dependency ->
 		dependency.exclude module:'jboss-vfs'
 	}
-}*/
-
+}
+	
 project(':namespace') {
    dependencies {
-       compile springDependencies25
+	   compile springDependencies25
 	   compile group: 'org.jboss.as', name: 'jboss-as-naming', version: versions.jbossAs7
 	   compile group: 'org.jboss.spec.javax.resource', name:'jboss-connector-api_1.5_spec', version:versions.javaxResource
 	   compile project(':deployers:deployers-core')
@@ -321,79 +320,9 @@ project(':namespace') {
 }
 
 project(':facade') {
-    dependencies {
-        compile group: 'org.jboss', name: 'jboss-reflect', version:versions.jbossReflect
-        compile group: 'org.jboss.kernel', name: 'jboss-kernel', version:versions.jbossKernel
-        compile springDependencies25
-    }
-}
-
-task installSpring (dependsOn: [install]){
-	onlyIf{"$System.env.JBOSS_HOME"!=""}
-}
-
-installSpring.doFirst {
-	ant.input(message: 'Which version of Spring do you want to install?', validargs: '2.5,3,3.1,n', addproperty: 'springVersion')
-	if(ant.springVersion == '2.5') {
-		println 'Installing 2.5'
-		dependencies{
-			snowdropDependencies springDependencies25
-		}
-	}
-	else if(ant.springVersion == '3') {
-		println 'Installing 3'
-		dependencies{
-			snowdropDependencies springDependencies3
-		}	
-	}
-	else if(ant.springVersion == '3.1') {
-		println 'Installing 3.1'
-		dependencies{
-			snowdropDependencies springDependencies31
-		}
-	}
-	else if(ant.springVersion == 'n') {
-		throw new StopExecutionException("Not installing Spring Dependencies")
-	}
-	
-	
-	copy{
-		jbossHome = "$System.env.JBOSS_HOME"
-		from configurations.snowdropDependencies.copy().setTransitive(false)	
-		rename { name ->
-		  def artifacts = configurations.snowdropDependencies.resolvedConfiguration.resolvedArtifacts 
-		  def artifact = artifacts.find { it.file.name == name }
-		  "${artifact.name}.${artifact.extension}"
-		}
-		into jbossHome + '/modules/org/springframework/spring/snowdrop'
-		include '**/*.jar'
-	}
-	
-	copy {
-		jbossHome = "$System.env.JBOSS_HOME"
-		from 'subsystem-as7/modules/spring-' + ant.springVersion + '/src/main/module'
-		into jbossHome + '/modules/org/springframework/spring/snowdrop'
-		include '**/*.xml'
+	dependencies {
+		compile group: 'org.jboss', name: 'jboss-reflect', version:versions.jbossReflect
+		compile group: 'org.jboss.kernel', name: 'jboss-kernel', version:versions.jbossKernel
+		compile springDependencies25
 	}
 }
-
-installSpring.doLast {
-	ant.xslt(in: jbossHome + '/standalone/configuration/standalone.xml', style: 'install.xml',
-			 out:   jbossHome + '/standalone/configuration/standalone-new.xml',
-			 classpath: configurations.xslt.asPath)
-	copy{
-		from jbossHome + '/standalone/configuration/standalone-new.xml'
-		into jbossHome + '/standalone/configuration/'
-		rename { String fileName ->
-			'standalone.xml'
-		}
-	}
-	ant.input(message: 'Do you want to config the snowdrop install in domain mode?', validargs: 'yes,no', addproperty: 'config')
-	
-	if (ant.config == 'yes'){
-		exec {
-			commandLine './install.sh'
-		}
-	}
-}
-

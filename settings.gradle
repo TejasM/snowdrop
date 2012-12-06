@@ -1,7 +1,7 @@
 include 'vfs'
 include 'deployers:deployers-core'
-/*include 'deployers:deployers-vfs2'
-include 'deployers:deployers-vfs3'*/
+include 'deployers:deployers-vfs2'
+include 'deployers:deployers-vfs3'
 include 'weaving'
 include 'namespace'
 include 'facade'
