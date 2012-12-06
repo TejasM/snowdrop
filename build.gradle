@@ -262,7 +262,19 @@ project(':deployers:deployers-vfs2') {
 		compile ('org.jboss.deployers:jboss-deployers-spi:2.0.8.SP1'){
 			transitive = false
 		}
+		compile ('org.jboss.deployers:jboss-deployers-client-spi:2.0.8.SP1'){
+			transitive = false
+		}
+		compile ('org.jboss.deployers:jboss-deployers-client:2.0.8.SP1'){
+			transitive = false
+		}
+		compile ('org.jboss.cl:jboss-classloader:2.0.7.CR2'){
+			transitive = false
+		}
 		compile ('org.jboss.cl:jboss-classloading:2.0.7.CR2'){
+			transitive = false
+		}
+		compile ('org.jboss.cl:jboss-classloading-vfs:2.0.7.CR2'){
 			transitive = false
 		}
 	}

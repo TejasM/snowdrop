@@ -45,9 +45,7 @@ versions = [jbossVfs3: '3.1.0.Final',jbossVfs2: '2.1.3.SP1', jbossMan: '2.1.0.GA
 		javaxResource: '1.0.0.Final',
 		ironjacamar: '1.0.4.Final',
 		jbossModules: '1.0.2.GA',
-		spring25:'2.5.6.SEC02',
-		spring3:'3.0.6.RELEASE',
-		spring31:'3.1.0.RELEASE',
+		spring:'2.5.6.SEC02',
 		jbossLogging:'2.1.0.GA',
 		jbossClassloader: '2.2.0.Alpha3',
 		javaxServlet: '2.3',
@@ -58,50 +56,33 @@ versions = [jbossVfs3: '3.1.0.Final',jbossVfs2: '2.1.3.SP1', jbossMan: '2.1.0.GA
 		jbossJandex:'1.0.0.Beta7',
 		aspectj: '1.6.8',
 		aopalliance:'1.0',
-		saxon:'8.7']
-
-def springDependencies25 = [
-	[group:'org.springframework', name:'spring-core', version: versions.spring25],
-	[group:'org.springframework', name:'spring-context', version: versions.spring25],
-	[group:'org.springframework', name:'spring-webmvc', version: versions.spring25],
-	[group:'org.springframework', name:'spring-jms', version: versions.spring25],
-	[group:'org.springframework', name:'spring-aop', version: versions.spring25],
-	[group:'org.springframework', name:'spring-beans', version: versions.spring25],
-	[group:'org.springframework', name:'spring-context-support', version: versions.spring25],
-	[group:'org.springframework', name:'spring-web', version: versions.spring25],
-]
+		saxon:'8.7',
+		snowdrop:'2.0.3.Final']
 
 def springDependencies3 = [
-	[group:'org.springframework', name:'spring-core', version: versions.spring3],
-	[group:'org.springframework', name:'spring-context', version: versions.spring3],
-	[group:'org.springframework', name:'spring-webmvc', version: versions.spring3],
-	[group:'org.springframework', name:'spring-jms', version: versions.spring3],
-	[group:'org.springframework', name:'spring-aop', version: versions.spring3],
-	[group:'org.springframework', name:'spring-asm', version: versions.spring3],
-	[group:'org.springframework', name:'spring-beans', version: versions.spring3],
-	[group:'org.springframework', name:'spring-context-support', version: versions.spring3],
-	[group:'org.springframework', name:'spring-expression', version: versions.spring3],
-	[group:'org.springframework', name:'spring-web', version: versions.spring3],
+	[group:'org.springframework', name:'spring-core', version: versions.spring],
+	[group:'org.springframework', name:'spring-context', version: versions.spring],
+	[group:'org.springframework', name:'spring-webmvc', version: versions.spring],
+	[group:'org.springframework', name:'spring-jms', version: versions.spring],
+	[group:'org.springframework', name:'spring-aop', version: versions.spring],
+	[group:'org.springframework', name:'spring-asm', version: versions.spring],
+	[group:'org.springframework', name:'spring-beans', version: versions.spring],
+	[group:'org.springframework', name:'spring-context-support', version: versions.spring],
+	[group:'org.springframework', name:'spring-expression', version: versions.spring],
+	[group:'org.springframework', name:'spring-web', version: versions.spring],
 ]
 
-def springDependencies31 = [
-	[group:'org.springframework', name:'spring-core', version: versions.spring31],
-	[group:'org.springframework', name:'spring-context', version: versions.spring31],
-	[group:'org.springframework', name:'spring-webmvc', version: versions.spring31],
-	[group:'org.springframework', name:'spring-jms', version: versions.spring31],
-	[group:'org.springframework', name:'spring-aop', version: versions.spring31],
-	[group:'org.springframework', name:'spring-asm', version: versions.spring31],
-	[group:'org.springframework', name:'spring-beans', version: versions.spring31],
-	[group:'org.springframework', name:'spring-context-support', version: versions.spring31],
-	[group:'org.springframework', name:'spring-expression', version: versions.spring31],
-	[group:'org.springframework', name:'spring-web', version: versions.spring31],
-]
 
+def springDependencies = []
+jbossHome = ""
 repositories {	
 	mavenLocal()
+	mavenCentral()
+	mavenRepo urls: ['https://repository.jboss.org/nexus/content/groups/public-jboss/', 'https://repository.jboss.org/nexus/content/repositories/deprecated/']
 }
 
 configurations{
+	snowdrop
 	snowdropDependencies
 	xslt
 }
@@ -114,79 +95,110 @@ dependencies{
 	xslt group:'net.sf.saxon', name:'saxon', version:versions.saxon
 }
 
-task install() {
-	onlyIf{"$System.env.JBOSS_HOME"!=""}
+task install()
+
+install.doFirst(){
+	if (project.hasProperty("JBOSS_HOME")){
+		project.jbossHome = "$JBOSS_HOME"
+	}
+	if (project.jbossHome == ""){
+		project.jbossHome =  "$System.env.JBOSS_HOME"
+		if (project.jbossHome == ""){
+			throw new GradleException("Please define $JBOSS_HOME on the system or pass in -PJBOSS_HOME=path/to/jboss/as!")
+		}
+	}
+	println project.jbossHome
+	if (project.hasProperty("SPRING_VERSION")){
+		versions.spring  = "$SPRING_VERSION"
+	}
+	springDependencies = [
+		[group:'org.springframework', name:'spring-core', version: versions.spring],
+		[group:'org.springframework', name:'spring-context', version: versions.spring],
+		[group:'org.springframework', name:'spring-webmvc', version: versions.spring],
+		[group:'org.springframework', name:'spring-jms', version: versions.spring],
+		[group:'org.springframework', name:'spring-aop', version: versions.spring],
+		[group:'org.springframework', name:'spring-beans', version: versions.spring],
+		[group:'org.springframework', name:'spring-context-support', version: versions.spring],
+		[group:'org.springframework', name:'spring-web', version: versions.spring],
+	]
+	if (versions.spring.startsWith('3')){
+		springDependencies.add([group:'org.springframework', name:'spring-asm', version: versions.spring])
+		springDependencies.add([group:'org.springframework', name:'spring-expression', version: versions.spring])
+	}
+	if (project.hasProperty("SNOWDROP_VERSION")){
+		versions.snowdrop  = "$SNOWDROP_VERSION"
+	}
+	dependencies{		
+		snowdrop ('org.jboss.snowdrop:snowdrop-subsystem-as7:' + versions.snowdrop +'@zip'){
+			transitive = false
+		}
+	}
 }
 
 install.doLast {
 	tasks.installSpring.execute()
+	tasks.installSnowdrop.execute()
 }
 
-task installSpring (dependsOn: [install]){
-	onlyIf{"$System.env.JBOSS_HOME"!=""}
+task installSnowdrop (dependsOn: [install])
+
+installSnowdrop.doFirst {
+	configurations.snowdrop.each {
+		println it.toString()
+	}
+	copy{
+		configurations.snowdrop.filter { it.toString().endsWith(".zip") }.each{
+			from zipTree(it)
+		}
+		into jbossHome + '/modules'
+		include '**/*.jar', '**/*.xml'
+	}
 }
+
+task installSpring (dependsOn: [install])
 
 installSpring.doFirst {
-	ant.input(message: 'Which version of Spring do you want to install?', validargs: '2.5,3,3.1,n', addproperty: 'springVersion')
-	if(ant.springVersion == '2.5') {
-		println 'Installing 2.5'
-		dependencies{
-			snowdropDependencies springDependencies25
-		}
+	dependencies{
+		snowdropDependencies springDependencies
 	}
-	else if(ant.springVersion == '3') {
-		println 'Installing 3'
-		dependencies{
-			snowdropDependencies springDependencies3
-		}
-	}
-	else if(ant.springVersion == '3.1') {
-		println 'Installing 3.1'
-		dependencies{
-			snowdropDependencies springDependencies31
-		}
-	}
-	else if(ant.springVersion == 'n') {
-		throw new StopExecutionException("Not installing Spring Dependencies")
-	}
-	
-	
 	copy{
-		jbossHome = "$System.env.JBOSS_HOME"
 		from configurations.snowdropDependencies.copy().setTransitive(false)
 		rename { name ->
 		  def artifacts = configurations.snowdropDependencies.resolvedConfiguration.resolvedArtifacts
 		  def artifact = artifacts.find { it.file.name == name }
 		  "${artifact.name}.${artifact.extension}"
 		}
-		into jbossHome + '/modules/org/springframework/spring/snowdrop'
+		into project.jbossHome + '/modules/org/springframework/spring/snowdrop'
 		include '**/*.jar'
 	}
 	
-	copy {
+/*	copy {
 		jbossHome = "$System.env.JBOSS_HOME"
 		from 'subsystem-as7/modules/spring-' + ant.springVersion + '/src/main/module'
 		into jbossHome + '/modules/org/springframework/spring/snowdrop'
-		include '**/*.xml'
-	}
+		include '**//*.xml'
+	}*/
 }
 
 installSpring.doLast {
-	ant.xslt(in: jbossHome + '/standalone/configuration/standalone.xml', style: 'install.xml',
-			 out:   jbossHome + '/standalone/configuration/standalone-new.xml',
-			 classpath: configurations.xslt.asPath)
-	copy{
-		from jbossHome + '/standalone/configuration/standalone-new.xml'
-		into jbossHome + '/standalone/configuration/'
-		rename { String fileName ->
-			'standalone.xml'
+	ant.input(message: 'Do you want to config the snowdrop install in standalone mode?', validargs: 'yes,no', addproperty: 'configStand')
+	if (ant.configStand == 'yes'){
+		ant.xslt(in: jbossHome + '/standalone/configuration/standalone.xml', style: 'install.xml',
+				 out:   jbossHome + '/standalone/configuration/standalone-new.xml',
+				 classpath: configurations.xslt.asPath)
+		copy{
+			from project.jbossHome + '/standalone/configuration/standalone-new.xml'
+			into project.jbossHome + '/standalone/configuration/'
+			rename { String fileName ->
+				'standalone.xml'
+			}
 		}
 	}
-	ant.input(message: 'Do you want to config the snowdrop install in domain mode?', validargs: 'yes,no', addproperty: 'config')
+	ant.input(message: 'Do you want to config the snowdrop install in domain mode?', validargs: 'yes,no', addproperty: 'configDomain')
 	
-	if (ant.config == 'yes'){
+	if (ant.configDomain == 'yes'){
 		exec {
-			commandLine './install.sh'
+			commandLine './install.sh "' + project.jbossHome + '"'
 		}
 	}
 }
