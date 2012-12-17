@@ -65,12 +65,14 @@
             <exports>
                 <include path="META-INF**"/>
                 <include path="org**"/>
+                <include path="net**"/>
             </exports>
             <imports>
                 <include path="META-INF**"/>
                 <include path="org**"/>
+            	<include path="net**"/>
             </imports>
         </module>
-
+        
     </dependencies>
 </module>

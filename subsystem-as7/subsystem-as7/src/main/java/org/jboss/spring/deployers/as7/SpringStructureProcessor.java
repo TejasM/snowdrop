@@ -22,6 +22,9 @@
 
 package org.jboss.spring.deployers.as7;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -31,20 +34,23 @@ import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.logging.Logger;
 import org.jboss.vfs.VirtualFile;
 
-import java.util.HashSet;
-import java.util.Set;
-
 /**
  * @author Marius Bogoevici
  */
 public class SpringStructureProcessor implements DeploymentUnitProcessor {
+	
+	private String xmlApplicationContext;
+	
+	public SpringStructureProcessor(String xmlApplicationContext) {
+		this.xmlApplicationContext = xmlApplicationContext;
+	}
 
     private static final Logger log = Logger.getLogger("org.jboss.snowdrop");
 
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
-
+        
         ResourceRoot deploymentRoot = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT);
 
         if (deploymentRoot == null) {
@@ -58,12 +64,47 @@ public class SpringStructureProcessor implements DeploymentUnitProcessor {
                 springContextLocations.add(child);
                 log.debug("Found:" + child.getPathName());
             }
+            if (child.getName().endsWith("-spring.properties")) {
+                springContextLocations.add(child);
+                log.debug("Found:" + child.getPathName());
+            }
         }
+        
+        metaInf = deploymentRoot.getRoot().getChild("WEB-INF/classes/META-INF");
+		if (metaInf != null) {
+			for (VirtualFile child : metaInf.getChildren()) {
+				if (child.getName().endsWith("-spring.xml")) {
+					springContextLocations.add(child);
+					log.debug("Found:" + child.getPathName());
+				}
+				if (child.getName().endsWith("-spring.properties")) {
+					springContextLocations.add(child);
+					log.debug("Found:" + child.getPathName());
+				}
+			}
+		}
+        
+		if (!springContextLocations.isEmpty()) {
+			SpringDeployment springDeployment = new SpringDeployment(
+					springContextLocations, xmlApplicationContext);
+			springDeployment.attachTo(deploymentUnit);
+			try {
+				Class.forName("org.springframework.context.annotation.AnnotationConfigApplicationContext");
+				springDeployment.setSpringVersion("3.0+");
+			} catch (Exception e) {
+				try {
+					Class.forName("org.springframework.context.support.AbstractXmlApplicationContext");
+				} catch (ClassNotFoundException e1) {
+					// TODO: what to do if neither is installed (only warn or
+					// give error?), giving warning for now.
+					System.out
+							.println("Snowdrop detected no spring module, make sure you have installed spring dependencies correctly");
+					return;
+				}
+				springDeployment.setSpringVersion("2.5");
 
-        if (!springContextLocations.isEmpty()) {
-            SpringDeployment springDeployment = new SpringDeployment(springContextLocations);
-            springDeployment.attachTo(deploymentUnit);
-        }
+			}
+		}
 
     }
 

@@ -66,6 +66,12 @@
             <artifactId>snowdrop-deployers</artifactId>
             <scope>provided</scope>
         </dependency>
+        
+        <dependency>
+        	<groupId>cglib</groupId>
+        	<artifactId>cglib-nodep</artifactId>
+        </dependency>
+        
     </dependencies>
 
     <build>

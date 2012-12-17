@@ -460,7 +460,16 @@
                 <artifactId>jboss-as-connector</artifactId>
                 <version>${version.org.jboss.as7}</version>
             </dependency>
+            
+            <dependency>
+            	<groupId>cglib</groupId>
+            	<artifactId>cglib-nodep</artifactId>
+            	<version>2.2.2</version>
+            </dependency>
+
         </dependencies>
+        
+        
     </dependencyManagement>
 
     <profiles>

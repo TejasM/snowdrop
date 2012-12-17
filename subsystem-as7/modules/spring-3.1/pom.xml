@@ -78,6 +78,11 @@
             <groupId>org.springframework</groupId>
             <artifactId>spring-context-support</artifactId>
         </dependency>
+        
+        <dependency>
+        	<groupId>cglib</groupId>
+        	<artifactId>cglib-nodep</artifactId>
+        	</dependency>
     </dependencies>
 
     <build>
@@ -96,7 +101,7 @@
                             <outputDirectory>${project.build.directory}/dependency/lib</outputDirectory>
                             <overWriteSnapshots>true</overWriteSnapshots>
                             <stripVersion>true</stripVersion>
-                            <includeGroupIds>org.springframework,org.jboss.snowdrop,aopalliance,org.aspectj</includeGroupIds>
+                            <includeGroupIds>org.springframework,org.jboss.snowdrop,aopalliance,org.aspectj,cglib</includeGroupIds>
                         </configuration>
                     </execution>
                 </executions>
@@ -107,13 +112,28 @@
 
                 <executions>
                     <execution>
-                        <id>make-module</id>
+                        <id>make-module-without-dep</id>
                         <phase>package</phase>
                         <goals>
                             <goal>single</goal>
                         </goals>
                         <configuration>
                             <finalName>spring-3.1-module</finalName>
+                            <appendAssemblyId>false</appendAssemblyId>
+                            <attach>true</attach>
+                            <descriptors>
+                                <descriptor>${basedir}/src/main/assembly/spring-3.1-module-without-dep.xml</descriptor>
+                            </descriptors>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>make-module</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                        <configuration>
+                            <finalName>spring-3.1-module-with-dep</finalName>
                             <appendAssemblyId>false</appendAssemblyId>
                             <attach>false</attach>
                             <descriptors>

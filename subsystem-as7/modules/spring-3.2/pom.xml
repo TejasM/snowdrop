@@ -29,12 +29,13 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>snowdrop-module-spring-3</artifactId>
-    <name>Snowdrop AS7 Subsystem - Spring 3 Module</name>
+    <artifactId>snowdrop-module-spring-3.2</artifactId>
+    <name>Snowdrop AS7 Subsystem - Spring 3.2 Module</name>
     <packaging>pom</packaging>
 
     <properties>
-        <version.spring>3.0.6.RELEASE</version.spring>
+        <version.spring>3.2.0.RELEASE</version.spring>
+        <version.aspectj>1.6.8</version.aspectj>
     </properties>
 
     <dependencies>
@@ -77,11 +78,6 @@
             <groupId>org.springframework</groupId>
             <artifactId>spring-context-support</artifactId>
         </dependency>
-        
-        <dependency>
-            <groupId>cglib</groupId>
-            <artifactId>cglib-nodep</artifactId>
-            </dependency>
     </dependencies>
 
     <build>
@@ -100,7 +96,7 @@
                             <outputDirectory>${project.build.directory}/dependency/lib</outputDirectory>
                             <overWriteSnapshots>true</overWriteSnapshots>
                             <stripVersion>true</stripVersion>
-                            <includeGroupIds>org.springframework,org.jboss.snowdrop,aopalliance,org.aspectj,cglib</includeGroupIds>
+                            <includeGroupIds>org.springframework,org.jboss.snowdrop,aopalliance,org.aspectj</includeGroupIds>
                         </configuration>
                     </execution>
                 </executions>
@@ -117,11 +113,11 @@
                             <goal>single</goal>
                         </goals>
                         <configuration>
-                            <finalName>spring-3-module</finalName>
+                            <finalName>spring-3.2-module</finalName>
                             <appendAssemblyId>false</appendAssemblyId>
                             <attach>true</attach>
                             <descriptors>
-                                <descriptor>${basedir}/src/main/assembly/spring-3-module-without-dep.xml</descriptor>
+                                <descriptor>${basedir}/src/main/assembly/spring-3.2-module-without-dep.xml</descriptor>
                             </descriptors>
                         </configuration>
                     </execution>
@@ -132,11 +128,11 @@
                             <goal>single</goal>
                         </goals>
                         <configuration>
-                            <finalName>spring-3-module-with-dep</finalName>
+                            <finalName>spring-3.2-module-with-dep</finalName>
                             <appendAssemblyId>false</appendAssemblyId>
                             <attach>false</attach>
                             <descriptors>
-                                <descriptor>${basedir}/src/main/assembly/spring-3-module.xml</descriptor>
+                                <descriptor>${basedir}/src/main/assembly/spring-3.2-module.xml</descriptor>
                             </descriptors>
                         </configuration>
                     </execution>

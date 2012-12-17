@@ -46,8 +46,8 @@ public class SnowdropDeployersTestCase extends BootstrapDeployersTest {
         return AbstractTestCaseWithSetup.suite(SnowdropDeployersTestCase.class);
     }
 
-    public void testSimpleEar() throws Exception {
-        System.setProperty("java.naming.factory.initial", MockInitialContextFactory.class.getName());
+   public void testSimpleEar() throws Exception {
+	    System.setProperty("java.naming.factory.initial", MockInitialContextFactory.class.getName());
         VirtualFile ear = VFS.getChild("multiplefiles-top-level.ear");
         createAssembledDirectory(ear).addPath("multiplefiles");
         VFSDeploymentUnit unit = assertDeploy(ear);
@@ -58,7 +58,7 @@ public class SnowdropDeployersTestCase extends BootstrapDeployersTest {
         Assert.assertNull(NonSerializableFactory.lookup("TestContext2"));
     }
 
-    public void testOverlappingJndiNames() throws Exception {
+   public void testOverlappingJndiNames() throws Exception {
         VFSDeploymentUnit unit = null;
         System.setProperty("java.naming.factory.initial", MockInitialContextFactory.class.getName());
         VirtualFile ear = VFS.getChild("multiplefiles-top-level.ear");

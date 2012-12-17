@@ -115,17 +115,27 @@ public class SpringExtension implements Extension {
         @Override
         public void readElement(XMLExtendedStreamReader reader, List<ModelNode> list) throws XMLStreamException {
             ParseUtils.requireNoAttributes(reader);
-            ParseUtils.requireNoContent(reader);
+            String xmlApplicationContext = "";
+            try{
+				ParseUtils.nextElement(reader);
+				xmlApplicationContext = reader.getElementText();
+				ParseUtils.requireNoContent(reader);
+				System.out.println("Got XmlApplicationContext to be: " + xmlApplicationContext);
+            } catch(Exception e) {
+				System.out.println("Didn't find XmlApplicationContext Element");
+            	ParseUtils.requireNoContent(reader);
+            }            
             final ModelNode update = new ModelNode();
             update.get(OP).set(ADD);
             update.get(OP_ADDR).add(SUBSYSTEM, SUBSYSTEM_NAME);
-            list.add(createAddSubSystemOperation());
+            list.add(createAddSubSystemOperation(xmlApplicationContext));
         }
 
-        private static ModelNode createAddSubSystemOperation() {
+        private static ModelNode createAddSubSystemOperation(String xmlApplicationContext) {
             final ModelNode subsystem = new ModelNode();
             subsystem.get(OP).set(ADD);
             subsystem.get(OP_ADDR).add(ModelDescriptionConstants.SUBSYSTEM, SUBSYSTEM_NAME);
+            subsystem.get("xmlApplicationContext").set(xmlApplicationContext);
             return subsystem;
         }
 
