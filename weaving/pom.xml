@@ -14,20 +14,12 @@
     <dependencies>
         <!-- Compile (global dependencies) -->
         <dependency>
-            <groupId>org.jboss.cl</groupId>
-            <artifactId>jboss-classloader</artifactId>
-        </dependency>
-        <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-context</artifactId>
         </dependency>
         <dependency>
             <groupId>org.jboss.snowdrop</groupId>
-            <artifactId>snowdrop-deployers-core</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.jboss.snowdrop</groupId>
-            <artifactId>snowdrop-deployers</artifactId>
+            <artifactId>snowdrop-interceptor</artifactId>
             <scope>compile</scope>
         </dependency>
     </dependencies>

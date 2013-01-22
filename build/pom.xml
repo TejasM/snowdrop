@@ -67,7 +67,7 @@
         </dependency>
         <dependency>
             <groupId>org.jboss.snowdrop</groupId>
-            <artifactId>snowdrop-deployers</artifactId>
+            <artifactId>snowdrop-interceptor</artifactId>
         </dependency>
         <dependency>
             <groupId>org.jboss.snowdrop</groupId>

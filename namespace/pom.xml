@@ -23,30 +23,13 @@
 
         <dependency>
             <groupId>org.jboss.snowdrop</groupId>
-            <artifactId>snowdrop-deployers-core</artifactId>
+            <artifactId>snowdrop-interceptor</artifactId>
         </dependency>
 
-        <dependency>
-            <groupId>org.jboss.msc</groupId>
-            <artifactId>jboss-msc</artifactId>
-            <scope>provided</scope>
-        </dependency>
 
         <dependency>
             <groupId>org.jboss.spec.javax.resource</groupId>
-            <artifactId>jboss-connector-api_1.5_spec</artifactId>
-            <scope>provided</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>org.jboss.ironjacamar</groupId>
-            <artifactId>ironjacamar-core-api</artifactId>
-            <scope>provided</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>org.jboss.modules</groupId>
-            <artifactId>jboss-modules</artifactId>
+            <artifactId>jboss-connector-api_1.6_spec</artifactId>
             <scope>provided</scope>
         </dependency>
 
