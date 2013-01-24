@@ -23,8 +23,8 @@
     <resources>
         <resource-root path="snowdrop-subsystem-as7.jar"/>
         <resource-root path="snowdrop-vfs.jar"/>
-        <resource-root path="snowdrop-deployers.jar"/>
-        <resource-root path="snowdrop-deployers-jandex.jar"/>
+        <resource-root path="snowdrop-interceptor.jar"/>
+        <resource-root path="snowdrop-interceptor-jandex.jar"/>
     </resources>
     <dependencies>
         <module name="ch.qos.cal10n"/>
@@ -65,12 +65,14 @@
             <exports>
                 <include path="META-INF**"/>
                 <include path="org**"/>
+                <include path="net**"/>
             </exports>
             <imports>
                 <include path="META-INF**"/>
                 <include path="org**"/>
+            	<include path="net**"/>
             </imports>
         </module>
-
+        
     </dependencies>
 </module>

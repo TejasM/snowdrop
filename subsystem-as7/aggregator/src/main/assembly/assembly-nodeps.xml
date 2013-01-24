@@ -29,14 +29,6 @@
 
     <fileSets>
             <fileSet>
-                <directory>${basedir}/../modules/spring-2.5/src/main/module</directory>
-                <outputDirectory>module-spring-2.5/org/springframework/spring/snowdrop</outputDirectory>
-                <includes>
-                    <include>module.xml</include>
-                </includes>
-            </fileSet>
-
-            <fileSet>
                 <directory>${basedir}/../modules/spring-3/src/main/module</directory>
                 <outputDirectory>module-spring-3/org/springframework/spring/snowdrop</outputDirectory>
                 <includes>
@@ -57,8 +49,8 @@
                 <outputDirectory>module-deployer/org/jboss/snowdrop/main</outputDirectory>
                 <includes>
                     <include>snowdrop-vfs*.jar</include>
-                    <include>snowdrop-deployers.jar</include>
-                    <include>snowdrop-deployers-jandex.jar</include>
+                    <include>snowdrop-interceptor.jar</include>
+                    <include>snowdrop-interceptor-jandex.jar</include>
                 </includes>
             </fileSet>
             <fileSet>

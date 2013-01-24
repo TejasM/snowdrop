@@ -108,24 +108,33 @@ public class SpringExtension implements Extension {
 
     static class SpringSubsystemElementParser implements XMLElementReader<List<ModelNode>>,
             XMLElementWriter<SubsystemMarshallingContext> {
-
+    	private String [] customApplicationContexts;
         /**
          * {@inheritDoc}
          */
         @Override
         public void readElement(XMLExtendedStreamReader reader, List<ModelNode> list) throws XMLStreamException {
-            ParseUtils.requireNoAttributes(reader);
-            ParseUtils.requireNoContent(reader);
+        	String[] customAppContext ={reader.getAttributeValue(null, "xmlApplicationContext"), reader.getAttributeValue(null, "annotationApplicationContext")};
+        	this.customApplicationContexts = new String[] {customAppContext[0], customAppContext[1]};
+        	if(customAppContext[0]==null){
+        		customAppContext[0] = "org.springframework.context.support.ClassPathXmlApplicationContext";
+        	}
+        	if(customAppContext[1]==null){
+        		customAppContext[1] = "org.springframework.context.annotation.AnnotationConfigApplicationContext";
+        	}
+        	ParseUtils.requireNoContent(reader);           
             final ModelNode update = new ModelNode();
             update.get(OP).set(ADD);
             update.get(OP_ADDR).add(SUBSYSTEM, SUBSYSTEM_NAME);
-            list.add(createAddSubSystemOperation());
+            list.add(createAddSubSystemOperation(customAppContext));
         }
 
-        private static ModelNode createAddSubSystemOperation() {
+        private static ModelNode createAddSubSystemOperation(String[] customAppContext) {
             final ModelNode subsystem = new ModelNode();
             subsystem.get(OP).set(ADD);
             subsystem.get(OP_ADDR).add(ModelDescriptionConstants.SUBSYSTEM, SUBSYSTEM_NAME);
+            subsystem.get("xmlApplicationContext").set(customAppContext[0]);
+            subsystem.get("annotationApplicationContext").set(customAppContext[1]);
             return subsystem;
         }
 
@@ -137,6 +146,12 @@ public class SpringExtension implements Extension {
                 XMLStreamException {
             //TODO seems to be a problem with empty elements cleaning up the queue in FormattingXMLStreamWriter.runAttrQueue
             context.startSubsystemElement(NAMESPACE, false);
+            if (this.customApplicationContexts[0]!=null){
+            	writer.writeAttribute("xmlApplicationContext", this.customApplicationContexts[0]);
+            }
+            if (this.customApplicationContexts[1]!=null){
+            	writer.writeAttribute("annotationApplicationContext", this.customApplicationContexts[1]);
+            }
             writer.writeEndElement();
 
         }
