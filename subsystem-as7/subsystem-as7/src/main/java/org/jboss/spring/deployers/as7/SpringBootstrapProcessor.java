@@ -156,7 +156,7 @@ public class SpringBootstrapProcessor implements DeploymentUnitProcessor {
 			Constructor<?> ct = xmlApplicationContext
 					.getConstructor(new Class[] {String.class});
 			String resourceLocation = (new VFSResource(virtualFile)).getURL().toString();
-			applicationContext = (ConfigurableApplicationContext) ct.newInstance(new Object[]{resourceLocation});			
+			applicationContext = (ConfigurableApplicationContext) ct.newInstance(new Object[]{resourceLocation});
 		} catch (ClassNotFoundException e) {
 			System.out.println("ERROR: XmlApplicationContext specified could not be found");
 			throw new ClassNotFoundException();

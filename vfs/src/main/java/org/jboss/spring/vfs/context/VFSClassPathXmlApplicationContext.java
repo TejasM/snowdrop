@@ -99,7 +99,9 @@ public class VFSClassPathXmlApplicationContext extends ClassPathXmlApplicationCo
     
     @Override
     protected void loadBeanDefinitions(XmlBeanDefinitionReader reader) throws BeansException, IOException {
-        reader.loadBeanDefinitions(this.resource);
+    	for (String location : this.getConfigLocations()) {
+    		reader.loadBeanDefinitions(this.getResource(location));
+		}        
     }    
     
 }
