@@ -79,7 +79,17 @@
 	      <artifactId>aspectjrt</artifactId>
 	    </dependency>
 	    
-	    
+	    <dependency>
+	    	<groupId>org.javassist</groupId>
+	    	<artifactId>javassist</artifactId>
+	    	<version>3.16.1-GA</version>
+	    </dependency>
+
+	    <dependency>
+            <groupId>org.jboss.aop</groupId>
+            <artifactId>jboss-aop</artifactId>
+        </dependency>
+
     </dependencies>
 
     <build>

@@ -5,6 +5,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import javassist.ClassPool;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
@@ -25,7 +26,7 @@ import org.springframework.util.SystemPropertyUtils;
 @Aspect
 public class ContextInterceptor {
 	private ClassPathScanningCandidateComponentProvider classPathScanningObject;
-	
+
 	@Around("execution(public * org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider.findCandidateComponents(String))")
 	public Object interceptAndLog(ProceedingJoinPoint invocation) throws Throwable {
 		Object[] args = invocation.getArgs();

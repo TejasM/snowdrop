@@ -25,7 +25,19 @@ package org.jboss.spring.deployers.as7;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
+
+import javassist.ClassClassPath;
+import javassist.ClassPool;
+import javassist.CtClass;
+import javassist.CtField;
+import javassist.CtMethod;
+import javassist.CtNewMethod;
+import javassist.Modifier;
 
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.naming.ServiceBasedNamingStore;
@@ -41,6 +53,9 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.annotation.AnnotationIndexUtils;
 import org.jboss.as.server.deployment.module.ResourceRoot;
+import org.jboss.jandex.AnnotationInstance;
+import org.jboss.jandex.ClassInfo;
+import org.jboss.jandex.DotName;
 import org.jboss.jandex.Index;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
@@ -56,27 +71,103 @@ import org.jboss.spring.util.XmlJndiParse;
 import org.jboss.spring.vfs.VFSResource;
 import org.jboss.spring.vfs.context.VFSClassPathXmlApplicationContext;
 import org.jboss.vfs.VirtualFile;
+import org.springframework.beans.factory.config.BeanDefinition;
+import org.springframework.beans.factory.support.GenericBeanDefinition;
 import org.springframework.beans.factory.xml.XmlBeanFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.support.GenericApplicationContext;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.support.ResourcePatternResolver;
 
 /**
  * @author Marius Bogoevici
  */
 public class SpringBootstrapProcessor implements DeploymentUnitProcessor {
+	private List<AnnotationInstance> getComponentClasses(Index index){
+		List<AnnotationInstance> annotatedInstances = new ArrayList<AnnotationInstance>();
+		annotatedInstances .addAll(index.getAnnotations(DotName.createSimple("org.springframework.stereotype.Repository")));
+		annotatedInstances.addAll(index.getAnnotations(DotName.createSimple("org.springframework.stereotype.Service")));
+		annotatedInstances.addAll(index.getAnnotations(DotName.createSimple("org.springframework.stereotype.Controller")));
+		annotatedInstances.addAll(index.getAnnotations(DotName.createSimple("org.springframework.stereotype.Component")));
+		return annotatedInstances;
+	}
 	
+	private String[] findCandiateComponents() {		
+		Index index = SpringDeployment.index;
+		List<String> componentClasses = new ArrayList<String>();
+		
+		List<AnnotationInstance> instances = getComponentClasses(index);
+		for (AnnotationInstance annotationInstance : instances) {
+			componentClasses.add(((ClassInfo)annotationInstance.target()).name().toString());
+		}		
+		return (String[]) componentClasses.toArray();
+	}
+	
+	private String toConstructorString(String[] strings){
+		String classStrings = new String();
+		for (String string : strings){
+			classStrings += string + " ";
+		}
+		return "new String (" + classStrings +")";
+	}
 
     @Override
-    public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
-    	
+    public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {    	
     	Map<ResourceRoot, Index> indexes = AnnotationIndexUtils.getAnnotationIndexes(phaseContext.getDeploymentUnit());
     	for(ResourceRoot root: indexes.keySet()){
     		if(root.getRootName().equals("classes")){
     			SpringDeployment.index = indexes.get(root);
     		}
-    	}
+    	}    	
+    	
+    	ClassPool classPool = ClassPool.getDefault();    	
+    	classPool.insertClassPath(new ClassClassPath(ConfigurableApplicationContext.class));
+        try {
+            CtClass cc = classPool.get("org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider");
+            //Add String containing all classes with component to class
+            CtField f = new CtField(classPool.get("java.lang.String"), "index", cc);
+            f.setModifiers(Modifier.FINAL);
+            f.setModifiers(Modifier.STATIC);
+            cc.addField(f, toConstructorString(findCandiateComponents()));                    
+            
+            CtMethod removeNonBaseMethod = new CtNewMethod().make("private String[] removeNonBase(String basePackage){ " +
+            		"String[] classesConsidered = this.index.split(\" \")" +
+            		"Set<String> inBase = new HashSet<String>();" +
+            		"for (String string: classesConsidered){" +
+            		"if(string.contains(basePackage){" +
+            		"inBase.add(string);}}" +
+            		"return (String[]) inBase.toArray();}", cc);
+            cc.addMethod(removeNonBaseMethod);
+            
+            CtMethod createBeansMethod = new CtNewMethod().make("private Set<BeanDefinition> createBeanDefinitions(String basePackage){ " +
+            		"String[] toConsider = removeNonBase(basePackage);" +
+            		"Set<BeanDefinition> beanDefs = new HashSet<BeanDefinition>();" +
+            		"for (String string: toConsider){" +
+            		"String classPath = ResourcePatternResolver.CLASSPATH_URL_PREFIX + resolveBasePackage(string) + \".class\";" +
+            		"ResourcePatternResolver resourcePatternResolver = (ResourcePatternResolver) getResourceLoader();" +
+            		"try {" +
+            		"Resource resource = resourcePatternResolver.getResource(classPath);" +
+            		"GenericBeanDefinition beanDefinition = new GenericBeanDefinition();" +
+            		"beanDefinition.setResource(resource);" +
+            		"beanDefinition.setBeanClass(Class.forName(string, false,  getResourceLoader().getClassLoader()));" +
+            		"beanDefs.add(beanDefinition);} catch(ClassNotFoundException e){" +
+            		"return null;" +
+            		"}}" +
+            		"return beanDefs}", cc);
+            cc.addMethod(createBeansMethod);
+            
+            CtMethod m = cc.getDeclaredMethod("findCandidateComponents");
+            m.insertBefore("{ if($0.index!=null && new Exception().getStackTrace()[3].getClassName().contains(\"ComponentScanBeanDefinitionParser\"){" +
+            		"Set<BeanDefinition> beanDefs = createBeanDefinitions($1);" +
+            		"if(beanDefs!=null){return beanDefs;}}}");
+            
+            cc.writeFile();
+            
+        } catch (Exception e){
+            e.printStackTrace();
+        }
     	
         ServiceTarget serviceTarget = phaseContext.getServiceTarget();
         SpringDeployment locations = SpringDeployment.retrieveFrom(phaseContext.getDeploymentUnit());
