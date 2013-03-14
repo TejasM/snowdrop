@@ -121,6 +121,7 @@ public class SpringBootstrapProcessor implements DeploymentUnitProcessor {
     	classPool.insertClassPath(new ClassClassPath(ConfigurableApplicationContext.class));
         try {
             CtClass cc = classPool.get("org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider");
+            cc.defrost();
             //Add/Update String containing all classes with component to class
             try{
                 CtField field = cc.getField("index");
