@@ -28,11 +28,14 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
 import javax.xml.stream.XMLStreamException;
 
+import javassist.*;
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.OperationContext;
@@ -48,11 +51,16 @@ import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.dmr.ModelNode;
+import org.jboss.jandex.AnnotationInstance;
+import org.jboss.jandex.ClassInfo;
+import org.jboss.jandex.DotName;
+import org.jboss.jandex.Index;
 import org.jboss.logging.Logger;
 import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLElementWriter;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
+import org.springframework.context.ConfigurableApplicationContext;
 
 /**
  * @author Marius Bogoevici
@@ -95,6 +103,72 @@ public class SpringExtension implements Extension {
         registration.registerOperationHandler(ADD, SpringSubsystemAdd.INSTANCE, SUBSYSTEM_ADD_DESCRIPTION, false);
         registration.registerOperationHandler(DESCRIBE, SpringSubsystemDescribeHandler.INSTANCE, SpringSubsystemDescribeHandler.INSTANCE, false, OperationEntry.EntryType.PRIVATE);
         subsystem.registerXMLElementWriter(parser);
+
+        ClassPool classPool = ClassPool.getDefault();
+        classPool.insertClassPath(new ClassClassPath(ConfigurableApplicationContext.class));
+
+        try {
+            CtClass cc = classPool.get("org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider");
+
+            try{
+                CtField field = cc.getField("index");
+                cc.removeField(field);
+            }  catch(Exception e){
+
+            } finally {
+                CtField f = new CtField(classPool.get("java.lang.String"), "index", cc);
+                cc.addField(f, "new String()");
+            }
+
+            try {
+                cc.getDeclaredMethod("removeNonBase");
+            } catch (NotFoundException e){
+                CtMethod removeNonBaseMethod = new CtMethod(classPool.get("java.util.List"), "removeNonBase",
+                        new CtClass[] { classPool.get("java.lang.String") }, cc);
+                cc.addMethod(removeNonBaseMethod);
+                removeNonBaseMethod.setBody("{String[] classesConsidered = this.index.split(\" \");" +
+                        "java.util.List inBase = new java.util.ArrayList();" +
+                        "for (int i =0; i < classesConsidered.length; i++){;" +
+                        "if(classesConsidered[i].contains($1)){;" +
+                        "inBase.add(classesConsidered[i]);};};" +
+                        "return inBase;}");
+            }
+
+            try {
+                cc.getDeclaredMethod("createBeanDefinitions");
+            } catch (NotFoundException e) {
+                CtMethod createBeansMethod = new CtNewMethod().make("private java.util.Set createBeanDefinitions(String basePackage){ " +
+                        "java.util.List toConsider = removeNonBase(basePackage);" +
+                        "java.util.Set beanDefs = new java.util.HashSet();" +
+                        "for (int i=0;i<toConsider.size();i++){;" +
+                        "String string = toConsider.get(i);" +
+                        "String classPath = org.springframework.core.io.support.ResourcePatternResolver.CLASSPATH_URL_PREFIX + resolveBasePackage(string.toString()) + \".class\";" +
+                        "org.springframework.core.io.support.ResourcePatternResolver resourcePatternResolver = (org.springframework.core.io.support.ResourcePatternResolver) getResourceLoader();" +
+                        "try {;" +
+                        "org.springframework.core.io.Resource resource = resourcePatternResolver.getResource(classPath);" +
+                        "org.springframework.beans.factory.support.GenericBeanDefinition beanDefinition = new org.springframework.beans.factory.support.GenericBeanDefinition();" +
+                        "beanDefinition.setResource(resource);" +
+                        "beanDefinition.setBeanClass(Class.forName(string.toString(), false,  getResourceLoader().getClassLoader()));" +
+                        "beanDefs.add(beanDefinition);} catch(ClassNotFoundException e){;" +
+                        "return null;" +
+                        "};};" +
+                        "return beanDefs;}", cc);
+                cc.addMethod(createBeansMethod);
+            }
+
+            CtMethod m = cc.getDeclaredMethod("findCandidateComponents");
+            m.insertBefore("{ if(this.index!=null && new Exception().getStackTrace()[3].getClassName().contains(\"ComponentScanBeanDefinitionParser\")){;" +
+                    "java.util.Set beanDefs = createBeanDefinitions($1);" +
+                    "if(beanDefs!=null){;return beanDefs;};};}");
+
+            cc.writeFile();
+        } catch (NotFoundException e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        } catch (CannotCompileException e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        } catch (IOException e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        }
     }
 
     public void initializeParsers(ExtensionParsingContext context) {

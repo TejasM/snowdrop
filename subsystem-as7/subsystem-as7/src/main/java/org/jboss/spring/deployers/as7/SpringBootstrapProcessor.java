@@ -31,13 +31,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javassist.ClassClassPath;
-import javassist.ClassPool;
-import javassist.CtClass;
-import javassist.CtField;
-import javassist.CtMethod;
-import javassist.CtNewMethod;
-import javassist.Modifier;
+import javassist.*;
 
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.naming.ServiceBasedNamingStore;
@@ -121,7 +115,7 @@ public class SpringBootstrapProcessor implements DeploymentUnitProcessor {
     		if(root.getRootName().equals("classes")){
     			SpringDeployment.index = indexes.get(root);
     		}
-    	}    	
+    	}
     	
     	ClassPool classPool = ClassPool.getDefault();    	
     	classPool.insertClassPath(new ClassClassPath(ConfigurableApplicationContext.class));
@@ -135,46 +129,8 @@ public class SpringBootstrapProcessor implements DeploymentUnitProcessor {
 
             } finally {
                 CtField f = new CtField(classPool.get("java.lang.String"), "index", cc);
-                f.setModifiers(Modifier.FINAL);
-                f.setModifiers(Modifier.STATIC);
                 cc.addField(f, toConstructorString(findCandiateComponents()));
             }
-
-            CtMethod removeNonBaseMethod = new CtMethod(classPool.get("java.util.Set"), "removeNonBase",
-                    new CtClass[] { classPool.get("java.lang.String") }, cc);
-            cc.addMethod(removeNonBaseMethod);
-            removeNonBaseMethod.setBody("{String[] classesConsidered = this.index.split(\" \");" +
-                    "java.util.Set<String> inBase = new java.util.HashSet();" +
-                    "for (String string: classesConsidered){" +
-                    "if(string.contains($1)){" +
-                    "inBase.add(string);}}" +
-                    "return inBase;}");
-
-
-            CtMethod createBeansMethod = new CtNewMethod().make("private Set<BeanDefinition> createBeanDefinitions(String basePackage){ " +
-            		"java.util.Set<String> toConsider = removeNonBase(basePackage);" +
-            		"java.util.Set<BeanDefinition> beanDefs = new java.util.HashSet<BeanDefinition>();" +
-            		"for (Object string: toConsider){" +
-            		"String classPath = ResourcePatternResolver.CLASSPATH_URL_PREFIX + resolveBasePackage(string.toString()) + \".class\";" +
-            		"org.springframework.core.io.support.ResourcePatternResolver resourcePatternResolver = (org.springframework.core.io.support.ResourcePatternResolver) getResourceLoader();" +
-            		"try {" +
-            		"org.springframework.core.io.Resource resource = resourcePatternResolver.getResource(classPath);" +
-            		"org.springframework.beans.factory.support.GenericBeanDefinition beanDefinition = new GenericBeanDefinition();" +
-            		"beanDefinition.setResource(resource);" +
-            		"beanDefinition.setBeanClass(Class.forName(string.toString(), false,  getResourceLoader().getClassLoader()));" +
-            		"beanDefs.add(beanDefinition);} catch(ClassNotFoundException e){" +
-            		"return null;" +
-            		"}}" +
-            		"return beanDefs;}", cc);
-            cc.addMethod(createBeansMethod);
-            
-            CtMethod m = cc.getDeclaredMethod("findCandidateComponents");
-            m.insertBefore("{ if($0.index!=null && new Exception().getStackTrace()[3].getClassName().contains(\"ComponentScanBeanDefinitionParser\"){" +
-            		"java.util.Set<BeanDefinition> beanDefs = createBeanDefinitions($1);" +
-            		"if(beanDefs!=null){return beanDefs;}}}");
-            
-            cc.writeFile();
-            
         } catch (Exception e){
             e.printStackTrace();
         }
