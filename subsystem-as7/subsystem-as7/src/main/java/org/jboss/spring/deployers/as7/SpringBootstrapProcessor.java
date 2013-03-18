@@ -22,6 +22,9 @@
 
 package org.jboss.spring.deployers.as7;
 
+import java.lang.ref.Reference;
+import java.lang.ref.ReferenceQueue;
+import java.lang.ref.WeakReference;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -104,7 +107,7 @@ public class SpringBootstrapProcessor implements DeploymentUnitProcessor {
 		for (Object string : strings){
 			classStrings += string.toString() + " ";
 		}
-		return "new String (" + classStrings +")";
+		return "new String (\"" + classStrings +"\");";
 	}
 
 
@@ -116,10 +119,10 @@ public class SpringBootstrapProcessor implements DeploymentUnitProcessor {
     			SpringDeployment.index = indexes.get(root);
     		}
     	}
-    	
-    	ClassPool classPool = ClassPool.getDefault();    	
-    	classPool.insertClassPath(new ClassClassPath(ConfigurableApplicationContext.class));
         try {
+            ClassPool classPool = ClassPool.getDefault();
+            Class c = Class.forName("org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider");
+            classPool.insertClassPath(new ClassClassPath(c));
             CtClass cc = classPool.get("org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider");
             cc.defrost();
             //Add/Update String containing all classes with component to class
@@ -131,6 +134,10 @@ public class SpringBootstrapProcessor implements DeploymentUnitProcessor {
             } finally {
                 CtField f = new CtField(classPool.get("java.lang.String"), "index", cc);
                 cc.addField(f, toConstructorString(findCandiateComponents()));
+
+                System.out.println("Reloaded in Bootstrap");
+                Loader loader = new Loader(classPool);
+                cc.toClass(loader);
             }
         } catch (Exception e){
             e.printStackTrace();

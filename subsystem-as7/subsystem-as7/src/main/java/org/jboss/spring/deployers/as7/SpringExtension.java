@@ -29,6 +29,10 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 
 import java.io.IOException;
+import java.lang.ref.Reference;
+import java.lang.ref.ReferenceQueue;
+import java.lang.ref.WeakReference;
+import java.security.ProtectionDomain;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -56,6 +60,7 @@ import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.DotName;
 import org.jboss.jandex.Index;
 import org.jboss.logging.Logger;
+import org.jboss.modules.ModuleClassLoader;
 import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLElementWriter;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
@@ -104,10 +109,12 @@ public class SpringExtension implements Extension {
         registration.registerOperationHandler(DESCRIBE, SpringSubsystemDescribeHandler.INSTANCE, SpringSubsystemDescribeHandler.INSTANCE, false, OperationEntry.EntryType.PRIVATE);
         subsystem.registerXMLElementWriter(parser);
 
-        ClassPool classPool = ClassPool.getDefault();
-        classPool.insertClassPath(new ClassClassPath(ConfigurableApplicationContext.class));
 
         try {
+            ClassPool classPool = ClassPool.getDefault();
+            Class c = Class.forName("org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider");
+            classPool.insertClassPath(new ClassClassPath(c));
+
             CtClass cc = classPool.get("org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider");
 
             try{
@@ -157,16 +164,24 @@ public class SpringExtension implements Extension {
             }
 
             CtMethod m = cc.getDeclaredMethod("findCandidateComponents");
-            m.insertBefore("{ if(this.index!=null && new Exception().getStackTrace()[3].getClassName().contains(\"ComponentScanBeanDefinitionParser\")){;" +
+            m.insertBefore("{ " +
+                    "System.out.println(\"Intercepted 1 working\");" +
+                    "if(this.index!=null && new Exception().getStackTrace()[3].getClassName().contains(\"ComponentScanBeanDefinitionParser\")){;" +
                     "java.util.Set beanDefs = createBeanDefinitions($1);" +
-                    "if(beanDefs!=null){;return beanDefs;};};}");
+                    "System.out.println(\"Intercepted 2 working\");" +
+                    "if(beanDefs!=null){;" +
+                    "System.out.println(\"Intercepted 3 working\");" +
+                    "return beanDefs;};};}");
+            System.out.println("Reloaded ClassPath in Extension");
 
-            cc.writeFile();
+
+
+            //cc.toClass();
         } catch (NotFoundException e) {
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
         } catch (CannotCompileException e) {
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-        } catch (IOException e) {
+        } catch (ClassNotFoundException e) {
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
         }
     }
