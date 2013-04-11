@@ -21,15 +21,15 @@
  */
 package org.jboss.spring.vfs;
 
-import java.net.URL;
+import org.springframework.core.io.AbstractResource;
+import org.springframework.core.io.Resource;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.io.IOException;
-import java.io.File;
-import java.io.InputStream;
-
-import org.springframework.core.io.Resource;
-import org.springframework.core.io.AbstractResource;
+import java.net.URL;
 
 /**
  * VFS based Resource.
@@ -150,11 +150,21 @@ public class VFSResource extends AbstractResource {
 
     static Object getChild(URL url) throws IOException {
         try {
+            URI uri = new java.net.URI(url.toString());
+            if (uri.getPath() == null) {
+                String path = uri.toString();
+                if (path.startsWith("jar:file:")) {
+                    path = url.getPath();
+                }
+                URL newUrl = new URL(path);
+                return VFSUtil.invokeMethodWithExpectedExceptionType(VFSUtil.VFS_METHOD_GET_ROOT_URL, null, URISyntaxException.class, newUrl);
+            }
             return VFSUtil.invokeMethodWithExpectedExceptionType(VFSUtil.VFS_METHOD_GET_ROOT_URL, null, URISyntaxException.class, url);
         } catch (URISyntaxException e) {
             IOException ioe = new IOException(e.getMessage());
             ioe.initCause(e);
             throw ioe;
         }
+
     }
 }
