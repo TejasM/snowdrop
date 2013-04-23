@@ -21,15 +21,20 @@
  */
 package org.jboss.spring.vfs;
 
+import org.jboss.vfs.TempFileProvider;
+import org.jboss.vfs.VFS;
+import org.jboss.vfs.VirtualFile;
 import org.springframework.core.io.AbstractResource;
 import org.springframework.core.io.Resource;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.Executors;
 
 /**
  * VFS based Resource.
@@ -52,7 +57,11 @@ public class VFSResource extends AbstractResource {
             throw new IllegalArgumentException("Null url");
         }
         try {
-            this.file = VFSUtil.invokeVfsMethod(VFSUtil.VFS_METHOD_GET_ROOT_URL, null, url);
+            if (VFSUtil.VFS_METHOD_GET_ROOT_URL != null && VFSUtil.VFS_METHOD_GET_ROOT_URL.getName().contains("getChild")){
+                this.file = getJarChild(url);
+            } else {
+                this.file = VFSUtil.invokeVfsMethod(VFSUtil.VFS_METHOD_GET_ROOT_URL, null, url);
+            }
         } catch (Exception e) {
             throw new IllegalArgumentException("Cannot retrieve file from URL: ", e);
         }
@@ -148,13 +157,71 @@ public class VFSResource extends AbstractResource {
         return file.hashCode();
     }
 
+    private static Map<URL, VirtualFile> urlToVirtualFile = new HashMap<URL, VirtualFile>();
+
     static Object getChild(URL url) throws IOException {
+        if(urlToVirtualFile.containsKey(url)){
+            VirtualFile archive = urlToVirtualFile.get(url);
+            return archive;
+        }
         try {
             URI uri = new java.net.URI(url.toString());
             if (uri.getPath() == null) {
                 String path = uri.toString();
                 if (path.startsWith("jar:file:")) {
                     path = url.getPath();
+                    path = path.substring(path.indexOf("file:/"));
+                    path = path.substring(0,path.toLowerCase().indexOf(".jar")+4);
+
+                    if (path.startsWith("file://")){ //UNC Path
+                        path = "C:/" + path.substring(path.indexOf("file:/")+7);
+                        path = "/" + new java.net.URI(path).getPath();
+                    }
+                    VirtualFile archive = VFSUtil.invokeMethodWithExpectedExceptionType(VFSUtil.VFS_METHOD_GET_ROOT_URL, null, URISyntaxException.class, new URL(path));
+                    TempFileProvider provider = TempFileProvider.create("tmp", Executors.newScheduledThreadPool(2));
+                    Closeable handle = VFS.mountZipExpanded(new FileInputStream(archive.getPhysicalFile()), archive.getName(), archive, provider);
+                    urlToVirtualFile.put(url, archive);
+                    return archive;
+                }
+                URL newUrl = new URL(path);
+                return VFSUtil.invokeMethodWithExpectedExceptionType(VFSUtil.VFS_METHOD_GET_ROOT_URL, null, URISyntaxException.class, newUrl);
+            }
+            return VFSUtil.invokeMethodWithExpectedExceptionType(VFSUtil.VFS_METHOD_GET_ROOT_URL, null, URISyntaxException.class, url);
+        } catch (URISyntaxException e) {
+            IOException ioe = new IOException(e.getMessage());
+            ioe.initCause(e);
+            throw ioe;
+        }
+
+    }
+    private Object getJarChild(URL url) throws IOException {
+        try {
+            URI uri = new java.net.URI(url.toString());
+            if (uri.getPath() == null) {
+                String path = uri.toString();
+                if (path.startsWith("jar:file:")) {
+                    path = path.substring(path.indexOf("file:/"));
+                    path = path.substring(0,path.toLowerCase().indexOf(".jar")+4);
+
+                    if (path.startsWith("file://")){ //UNC Path
+                        path = "C:/" + path.substring(path.indexOf("file:/")+7);
+                        path = "/" + new java.net.URI(path).getPath();
+                    }
+                    VirtualFile archive = VFSUtil.invokeMethodWithExpectedExceptionType(VFSUtil.VFS_METHOD_GET_ROOT_URL, null, URISyntaxException.class, new URL(path));
+                    if (archive.getChildrenRecursively().size() == 0){
+                        TempFileProvider provider = TempFileProvider.create("tmp", Executors.newScheduledThreadPool(2));
+                        Closeable handle = VFS.mountZipExpanded(new FileInputStream(archive.getPhysicalFile()), archive.getName() ,archive, provider);
+                    }
+                    String fullPath = url.getPath();
+                    fullPath = fullPath.replaceFirst("file:", "");
+                    fullPath = fullPath.replaceFirst("!", "");
+                    List<VirtualFile> children = archive.getChildrenRecursively();
+                    for (VirtualFile file: children){
+                        if (file.getPathName().equals(fullPath)){
+                            return file;
+                        }
+                    }
+                    return archive;
                 }
                 URL newUrl = new URL(path);
                 return VFSUtil.invokeMethodWithExpectedExceptionType(VFSUtil.VFS_METHOD_GET_ROOT_URL, null, URISyntaxException.class, newUrl);
