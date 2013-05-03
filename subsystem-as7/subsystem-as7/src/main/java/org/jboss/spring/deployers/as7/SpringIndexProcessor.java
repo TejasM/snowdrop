@@ -22,70 +22,39 @@
 
 package org.jboss.spring.deployers.as7;
 
-import org.jboss.as.ee.component.EEModuleDescription;
-import org.jboss.as.naming.ServiceBasedNamingStore;
-import org.jboss.as.naming.ValueManagedReferenceFactory;
-import org.jboss.as.naming.context.NamespaceContextSelector;
-import org.jboss.as.naming.deployment.ContextNames;
-import org.jboss.as.naming.deployment.JndiName;
-import org.jboss.as.naming.service.BinderService;
-import org.jboss.as.server.deployment.*;
+import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.server.deployment.DeploymentPhaseContext;
+import org.jboss.as.server.deployment.DeploymentUnit;
+import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
+import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.annotation.AnnotationIndexUtils;
 import org.jboss.as.server.deployment.module.ResourceRoot;
+import org.jboss.dmr.ModelNode;
 import org.jboss.jandex.Index;
-import org.jboss.msc.service.ServiceBuilder;
-import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.service.ServiceTarget;
-import org.jboss.msc.value.InjectedValue;
-import org.jboss.spring.factory.NamedXmlApplicationContext;
-import org.jboss.spring.vfs.VFSResource;
-import org.jboss.vfs.VirtualFile;
-import org.springframework.beans.factory.support.DefaultListableBeanFactory;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.annotation.ClassPathBeanDefinitionScanner;
-import org.springframework.web.context.WebApplicationContext;
+import org.springframework.beans.factory.xml.DefaultNamespaceHandlerResolver;
+import org.springframework.beans.factory.xml.NamespaceHandlerResolver;
 
-import javax.servlet.ServletContextAttributeEvent;
-import javax.servlet.ServletContextAttributeListener;
+import java.io.IOException;
+import java.net.InetAddress;
 import java.util.Map;
 
 /**
  * @author Marius Bogoevici
  */
-public class SpringIndexProcessor implements DeploymentUnitProcessor, ServletContextAttributeListener {
+public class SpringIndexProcessor implements DeploymentUnitProcessor {
 
     @Override
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         Map<ResourceRoot, Index> indexes = AnnotationIndexUtils.getAnnotationIndexes(phaseContext.getDeploymentUnit());
-        for(ResourceRoot root: indexes.keySet()){
-            if(root.getRootName().equals("classes")){
+        for (ResourceRoot root : indexes.keySet()) {
+            if (root.getRootName().equals("classes")) {
                 SpringDeployment.index = indexes.get(root);
             }
         }
-
     }
 
     @Override
     public void undeploy(DeploymentUnit context) {
 
-    }
-
-    @Override
-    public void attributeAdded(ServletContextAttributeEvent servletContextAttributeEvent) {
-        if (WebApplicationContext.
-                ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE.
-                equals(servletContextAttributeEvent.getName())) {
-            System.out.println(servletContextAttributeEvent.getName());
-        }
-    }
-
-    @Override
-    public void attributeRemoved(ServletContextAttributeEvent servletContextAttributeEvent) {
-        //To change body of implemented methods use File | Settings | File Templates.
-    }
-
-    @Override
-    public void attributeReplaced(ServletContextAttributeEvent servletContextAttributeEvent) {
-        //To change body of implemented methods use File | Settings | File Templates.
     }
 }

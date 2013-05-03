@@ -66,6 +66,12 @@
             <artifactId>jboss-servlet-api</artifactId>
             <version>2.5.0.GA</version>
         </dependency>
+
+        <dependency>
+            <groupId>org.jboss.as</groupId>
+            <artifactId>jboss-as-controller-client</artifactId>
+            <version>7.1.1.Final</version>
+        </dependency>
     </dependencies>
 
     <build>
