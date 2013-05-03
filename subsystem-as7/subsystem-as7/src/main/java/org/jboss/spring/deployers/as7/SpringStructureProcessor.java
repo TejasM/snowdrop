@@ -53,10 +53,24 @@ public class SpringStructureProcessor implements DeploymentUnitProcessor {
 
         Set<VirtualFile> springContextLocations = new HashSet<VirtualFile>();
         VirtualFile metaInf = deploymentRoot.getRoot().getChild("META-INF");
+        //ToDo: Find a way to add the schemas and handlers to the deployment
         for (VirtualFile child : metaInf.getChildren()) {
             if (child.getName().endsWith("-spring.xml")) {
                 springContextLocations.add(child);
                 log.debug("Found:" + child.getPathName());
+            }
+        }
+        metaInf = deploymentRoot.getRoot().getChild("WEB-INF/classes/META-INF");
+        if (metaInf != null) {
+            for (VirtualFile child : metaInf.getChildren()) {
+                if (child.getName().endsWith("-spring.xml")) {
+                    springContextLocations.add(child);
+                    log.debug("Found:" + child.getPathName());
+                }
+                if (child.getName().endsWith("-spring.properties")) {
+                    springContextLocations.add(child);
+                    log.debug("Found:" + child.getPathName());
+                }
             }
         }
 

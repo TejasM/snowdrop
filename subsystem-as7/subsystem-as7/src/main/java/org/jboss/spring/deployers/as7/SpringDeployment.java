@@ -24,6 +24,7 @@ package org.jboss.spring.deployers.as7;
 
 import org.jboss.as.server.deployment.AttachmentKey;
 import org.jboss.as.server.deployment.DeploymentUnit;
+import org.jboss.jandex.Index;
 import org.jboss.modules.Module;
 import org.jboss.vfs.VirtualFile;
 
@@ -40,6 +41,7 @@ public class SpringDeployment {
 
     private Set<VirtualFile> contextDefinitionLocations = new HashSet<VirtualFile>();
 
+    public static Index index;
 
     public SpringDeployment(Set<VirtualFile> contextDefinitionLocations) {
         this.contextDefinitionLocations = contextDefinitionLocations;
