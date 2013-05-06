@@ -157,13 +157,9 @@ public class VFSResource extends AbstractResource {
         return file.hashCode();
     }
 
-    private static Map<URL, VirtualFile> urlToVirtualFile = new HashMap<URL, VirtualFile>();
+    private static Map<String, VirtualFile> urlToVirtualFile = new HashMap<String, VirtualFile>();
 
     static Object getChild(URL url) throws IOException {
-        if(urlToVirtualFile.containsKey(url)){
-            VirtualFile archive = urlToVirtualFile.get(url);
-            return archive;
-        }
         try {
             URI uri = new java.net.URI(url.toString());
             if (uri.getPath() == null) {
@@ -177,14 +173,17 @@ public class VFSResource extends AbstractResource {
                         path = "C:/" + path.substring(path.indexOf("file:/")+7);
                         path = "/" + new java.net.URI(path).getPath();
                     }
+                    if(urlToVirtualFile.containsKey(path)){
+                        VirtualFile archive = urlToVirtualFile.get(path);
+                        return archive;
+                    }
                     VirtualFile archive = VFSUtil.invokeMethodWithExpectedExceptionType(VFSUtil.VFS_METHOD_GET_ROOT_URL, null, URISyntaxException.class, new URL(path));
                     TempFileProvider provider = TempFileProvider.create("tmp", Executors.newScheduledThreadPool(2));
                     Closeable handle = VFS.mountZipExpanded(new FileInputStream(archive.getPhysicalFile()), archive.getName(), archive, provider);
-                    urlToVirtualFile.put(url, archive);
+                    urlToVirtualFile.put(path, archive);
                     return archive;
                 }
-                URL newUrl = new URL(path);
-                return VFSUtil.invokeMethodWithExpectedExceptionType(VFSUtil.VFS_METHOD_GET_ROOT_URL, null, URISyntaxException.class, newUrl);
+                return VFSUtil.invokeMethodWithExpectedExceptionType(VFSUtil.VFS_METHOD_GET_ROOT_URL, null, URISyntaxException.class, url);
             }
             return VFSUtil.invokeMethodWithExpectedExceptionType(VFSUtil.VFS_METHOD_GET_ROOT_URL, null, URISyntaxException.class, url);
         } catch (URISyntaxException e) {
