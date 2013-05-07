@@ -20,14 +20,13 @@
     </scm>
 
     <modules>
-        <module>deployers</module>
         <module>subsystem-as7</module>
         <module>namespace</module>
         <module>facade</module>
         <module>vfs</module>
         <module>weaving</module>
         <module>build</module>
-        <module>deployer-assembly</module>
+        <module>interceptor</module>
     </modules>
 
     <properties>
@@ -123,21 +122,7 @@
         <!-- The parent pom manages the inter-dependencies of the modules. -->
         <dependencies>
 
-            <dependency>
-                <groupId>org.jboss.snowdrop</groupId>
-                <artifactId>snowdrop-deployers</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.jboss.snowdrop</groupId>
-                <artifactId>snowdrop-deployers-vfs2</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.jboss.snowdrop</groupId>
-                <artifactId>snowdrop-deployers-vfs3</artifactId>
-                <version>${project.version}</version>
-            </dependency>
+
             <dependency>
                 <groupId>org.jboss.snowdrop</groupId>
                 <artifactId>snowdrop-facade</artifactId>
@@ -316,6 +301,11 @@
                 <scope>provided</scope>
             </dependency>
             <dependency>
+                <groupId>org.jboss.spec.javax.ejb</groupId>
+                <artifactId>jboss-ejb-api_3.0_spec</artifactId>
+                <version>1.0.0.Beta1</version>
+            </dependency>
+            <dependency>
                 <groupId>org.jboss.aop</groupId>
                 <artifactId>jboss-aop</artifactId>
                 <version>${version.jboss.aop}</version>
@@ -423,13 +413,7 @@
                 <version>${version.junit}</version>
                 <scope>test</scope>
             </dependency>
-            <dependency>
-                <groupId>org.jboss.snowdrop</groupId>
-                <artifactId>snowdrop-deployers-core</artifactId>
-                <version>${project.version}</version>
-                <scope>provided</scope>
-            </dependency>
-            <dependency>
+              <dependency>
                 <groupId>org.aspectj</groupId>
                 <artifactId>aspectjrt</artifactId>
                 <version>${version.aspectj}</version>
@@ -465,6 +449,11 @@
                 <artifactId>jboss-as-connector</artifactId>
                 <version>${version.org.jboss.as7}</version>
             </dependency>
+            <dependency>
+                <groupId>org.jboss.snowdrop</groupId>
+                <artifactId>snowdrop-interceptor</artifactId>
+                <version>${project.version}</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
@@ -478,6 +467,39 @@
                 <microcontainer.outputDirectory>target/classes</microcontainer.outputDirectory>
                 <microcontainer.testOutputDirectory>target/test-classes</microcontainer.testOutputDirectory>
             </properties>
+        </profile>
+        <profile>
+            <id>as5-6</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+            </activation>
+            <properties>
+                <microcontainer.outputDirectory>target/classes</microcontainer.outputDirectory>
+                <microcontainer.testOutputDirectory>target/test-classes</microcontainer.testOutputDirectory>
+            </properties>
+            <dependencyManagement>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.jboss.snowdrop</groupId>
+                        <artifactId>snowdrop-deployers</artifactId>
+                        <version>${project.version}</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.jboss.snowdrop</groupId>
+                        <artifactId>snowdrop-deployers-vfs2</artifactId>
+                        <version>${project.version}</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.jboss.snowdrop</groupId>
+                        <artifactId>snowdrop-deployers-vfs3</artifactId>
+                        <version>${project.version}</version>
+                    </dependency>
+                </dependencies>
+            </dependencyManagement>
+            <modules>
+                <module>deployers</module>
+                <module>deployer-assembly</module>
+            </modules>
         </profile>
         <profile>
             <id>eclipse</id>

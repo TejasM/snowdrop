@@ -1,16 +1,16 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <parent>
         <groupId>org.jboss.snowdrop</groupId>
-        <artifactId>snowdrop-deployers-parent</artifactId>
+        <artifactId>snowdrop-parent</artifactId>
         <version>2.0.6.Final-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
-    <artifactId>snowdrop-deployers-core</artifactId>
+    <artifactId>snowdrop-interceptor</artifactId>
 
-    <name>Snowdrop - Deployers Core</name>
+    <name>Snowdrop - Interceptor</name>
     <url>http://www.jboss.org/snowdrop</url>
 
-    <description>Snowdrop - Common Deployer classes</description>
+    <description>Snowdrop - Common Interceptor and Annotation classes</description>
 
     <dependencies>
         <!-- dependency>
@@ -23,28 +23,10 @@
         </dependency>
         <!-- Compile (global dependencies) -->
         <dependency>
-            <groupId>org.jboss.deployers</groupId>
-            <artifactId>jboss-deployers-vfs-spi</artifactId>
-            <exclusions>
-                <exclusion>
-                    <groupId>jboss</groupId>
-                    <artifactId>jboss-vfs</artifactId>
-                </exclusion>
-            </exclusions>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
             <groupId>apache-xerces</groupId>
             <artifactId>xml-apis</artifactId>
         </dependency>
-        <dependency>
-            <groupId>org.jboss</groupId>
-            <artifactId>jboss-vfs</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.jboss</groupId>
-            <artifactId>jboss-common-core</artifactId>
-        </dependency>
+
         <dependency>
             <groupId>org.jboss.logging</groupId>
             <artifactId>jboss-logging-spi</artifactId>
@@ -54,38 +36,13 @@
             <artifactId>jboss-logging-log4j</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.jboss.kernel</groupId>
-            <artifactId>jboss-dependency</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.jboss.deployers</groupId>
-            <artifactId>jboss-deployers-spi</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.jboss.deployers</groupId>
-            <artifactId>jboss-deployers-structure-spi</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.jboss.deployers</groupId>
-            <artifactId>jboss-deployers-vfs</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.jboss.deployers</groupId>
-            <artifactId>jboss-deployers-core-spi</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.jboss.kernel</groupId>
-            <artifactId>jboss-kernel</artifactId>
-        </dependency>
-        <dependency>
             <groupId>org.jboss.aop</groupId>
             <artifactId>jboss-aop</artifactId>
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>org.jboss.javaee</groupId>
-            <artifactId>jboss-ejb-api</artifactId>
+            <groupId>org.jboss.spec.javax.ejb</groupId>
+            <artifactId>jboss-ejb-api_3.0_spec</artifactId>
             <scope>provided</scope>
         </dependency>
         <dependency>
@@ -111,10 +68,6 @@
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.jboss.snowdrop</groupId>
-            <artifactId>snowdrop-interceptor</artifactId>
         </dependency>
     </dependencies>
 

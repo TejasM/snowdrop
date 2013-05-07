@@ -23,6 +23,7 @@
     <resources>
         <resource-root path="snowdrop-subsystem-as7.jar"/>
         <resource-root path="snowdrop-vfs.jar"/>
+        <resource-root path="snowdrop-interceptors.jar"/>
         <resource-root path="snowdrop-deployers.jar"/>
     </resources>
     <dependencies>

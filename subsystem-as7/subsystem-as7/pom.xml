@@ -1,4 +1,5 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <artifactId>snowdrop-subsystem-as7-parent</artifactId>
@@ -18,10 +19,10 @@
         </dependency>
 
         <dependency>
-                    <groupId>org.jboss.as</groupId>
-                    <artifactId>jboss-as-ee</artifactId>
-                    <version>${version.org.jboss.as7}</version>
-                </dependency>
+            <groupId>org.jboss.as</groupId>
+            <artifactId>jboss-as-ee</artifactId>
+            <version>${version.org.jboss.as7}</version>
+        </dependency>
 
         <dependency>
             <groupId>org.jboss.as</groupId>
@@ -57,8 +58,7 @@
 
         <dependency>
             <groupId>org.jboss.snowdrop</groupId>
-            <artifactId>snowdrop-deployers</artifactId>
-            <scope>provided</scope>
+            <artifactId>snowdrop-interceptor</artifactId>
         </dependency>
     </dependencies>
 
@@ -120,7 +120,7 @@
                         <phase>package</phase>
                         <configuration>
                             <tasks>
-                                <taskdef name="jandex" classname="org.jboss.jandex.JandexAntTask" />
+                                <taskdef name="jandex" classname="org.jboss.jandex.JandexAntTask"/>
                                 <jandex run="true" newJar="true">
                                     <fileset dir="${project.build.directory}/dependency/lib">
                                         <!-- we only want to external jandex external dependent JARs to keep the originals
@@ -129,6 +129,7 @@
                                         <exclude name="**/snowdrop-namespace.jar"/>
                                         <exclude name="**/snowdrop-vfs.jar"/>
                                         <exclude name="**/snowdrop-weaving.jar"/>
+                                        <exclude name="**/snowdrop-interceptor.jar"/>
                                     </fileset>
                                 </jandex>
                             </tasks>
@@ -143,27 +144,74 @@
                     </dependency>
                 </dependencies>
             </plugin>
-
-            <plugin>
-                <artifactId>maven-assembly-plugin</artifactId>
-
-                <executions>
-                    <execution>
-                        <id>make-module</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>single</goal>
-                        </goals>
-                        <configuration>
-                            <finalName>jboss-spring-deployer-as7</finalName>
-                            <appendAssemblyId>false</appendAssemblyId>
-                            <descriptors>
-                                <descriptor>${basedir}/src/main/assembly/deployer.xml</descriptor>
-                            </descriptors>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
         </plugins>
     </build>
+    <profiles>
+        <profile>
+            <id>default</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <artifactId>maven-assembly-plugin</artifactId>
+
+                        <executions>
+                            <execution>
+                                <id>make-module</id>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>single</goal>
+                                </goals>
+                                <configuration>
+                                    <finalName>jboss-spring-deployer-as7</finalName>
+                                    <appendAssemblyId>false</appendAssemblyId>
+                                    <descriptors>
+                                        <descriptor>${basedir}/src/main/assembly/as7/deployer.xml</descriptor>
+                                    </descriptors>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>as5-6</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+            </activation>
+            <dependencies>
+                <dependency>
+                    <groupId>org.jboss.snowdrop</groupId>
+                    <artifactId>snowdrop-deployers</artifactId>
+                </dependency>
+            </dependencies>
+            <build>
+                <plugins>
+                    <plugin>
+                        <artifactId>maven-assembly-plugin</artifactId>
+
+                        <executions>
+                            <execution>
+                                <id>make-module</id>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>single</goal>
+                                </goals>
+                                <configuration>
+                                    <finalName>jboss-spring-deployer-as7</finalName>
+                                    <appendAssemblyId>false</appendAssemblyId>
+                                    <descriptors>
+                                        <descriptor>${basedir}/src/main/assembly/as6/deployer.xml</descriptor>
+                                    </descriptors>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 </project>
