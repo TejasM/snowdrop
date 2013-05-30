@@ -1,4 +1,4 @@
-package org.jboss.spring.deployers.as7;
+package org.jboss.snowdrop.context.support.scan;
 
 
 import org.springframework.beans.factory.config.BeanDefinition;
@@ -11,6 +11,8 @@ import org.springframework.context.annotation.ComponentScanBeanDefinitionParser;
 import org.springframework.util.StringUtils;
 import org.w3c.dom.Element;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.Set;
 
 public class CustomComponentScanBeanDefinition extends ComponentScanBeanDefinitionParser {
@@ -26,9 +28,13 @@ public class CustomComponentScanBeanDefinition extends ComponentScanBeanDefiniti
         String[] basePackages = StringUtils.tokenizeToStringArray(element.getAttribute(BASE_PACKAGE_ATTRIBUTE),
                 ConfigurableApplicationContext.CONFIG_LOCATION_DELIMITERS);
 
-        // Actually scan for bean definitions and register them.
+        // Actually org.jboss.spring.component.org.jboss.snowdrop.context.support.scan for bean definitions and register them.
         CustomClassPathBeanDefinitionScanner scanner = customConfigureScanner(parserContext, element);
+        long startTime = System.nanoTime();
         Set<BeanDefinitionHolder> beanDefinitions = scanner.doScan(basePackages);
+        long endTime = System.nanoTime();
+        long duration = endTime - startTime;
+        System.out.println(beanDefinitions.size() + " Beans took " + duration);
         registerComponents(parserContext.getReaderContext(), beanDefinitions, element);
 
         return null;
@@ -54,20 +60,45 @@ public class CustomComponentScanBeanDefinition extends ComponentScanBeanDefiniti
 
         try {
             parseBeanNameGenerator(element, scanner);
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
             readerContext.error(ex.getMessage(), readerContext.extractSource(element), ex.getCause());
         }
 
         try {
             parseScope(element, scanner);
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
             readerContext.error(ex.getMessage(), readerContext.extractSource(element), ex.getCause());
         }
+        Class[] spring2 = new Class[3];
+        spring2[0] = Element.class;
+        spring2[1] = ClassPathBeanDefinitionScanner.class;
+        spring2[2] = XmlReaderContext.class;
 
-        parseTypeFilters(element, scanner, readerContext);
+        Class[] spring3 = new Class[4];
+        spring3[0] = Element.class;
+        spring3[1] = ClassPathBeanDefinitionScanner.class;
+        spring3[2] = XmlReaderContext.class;
+        spring3[3] = ParserContext.class;
 
+        try {
+            Method method = this.getClass().getSuperclass().getDeclaredMethod("parseTypeFilters", spring2);
+            method.invoke(this, element, scanner, readerContext);
+        } catch (NoSuchMethodException e) {
+            Method method = null;
+            try {
+                method = this.getClass().getSuperclass().getDeclaredMethod("parseTypeFilters", spring3);
+            } catch (NoSuchMethodException e1) {
+            }
+            if (method != null) {
+                try {
+                    method.invoke(this, element, scanner, readerContext, parserContext);
+                } catch (IllegalAccessException e1) {
+                } catch (InvocationTargetException e1) {
+                }
+            }
+        } catch (InvocationTargetException e) {
+        } catch (IllegalAccessException e) {
+        }
         return scanner;
     }
 

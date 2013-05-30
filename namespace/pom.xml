@@ -27,6 +27,12 @@
         </dependency>
 
         <dependency>
+            <groupId>org.jboss.snowdrop</groupId>
+            <artifactId>snowdrop-subsystem-as7</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <dependency>
             <groupId>org.jboss.msc</groupId>
             <artifactId>jboss-msc</artifactId>
             <scope>provided</scope>
@@ -47,6 +53,13 @@
         <dependency>
             <groupId>org.jboss.modules</groupId>
             <artifactId>jboss-modules</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss</groupId>
+            <artifactId>jandex</artifactId>
+            <version>1.0.3.Final</version>
             <scope>provided</scope>
         </dependency>
 
