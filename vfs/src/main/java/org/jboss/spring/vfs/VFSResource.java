@@ -115,7 +115,7 @@ public class VFSResource extends AbstractResource {
 
     @SuppressWarnings("deprecation")
     public Resource createRelative(String relativePath) throws IOException {
-        //VirtualFile.findChild will not scan the parent or current directory
+        //VirtualFile.findChild will not org.jboss.spring.component.org.jboss.snowdrop.context.support.scan the parent or current directory
         if (relativePath.startsWith(".") || relativePath.indexOf("/") == -1) {
             return new VFSResource(getChild(new URL(getURL(), relativePath)));
         } else {

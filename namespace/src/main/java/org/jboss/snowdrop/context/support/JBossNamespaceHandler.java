@@ -22,6 +22,7 @@
 
 package org.jboss.snowdrop.context.support;
 
+import org.jboss.snowdrop.context.support.scan.CustomComponentScanBeanDefinition;
 import org.springframework.beans.factory.xml.NamespaceHandlerSupport;
 
 /**
@@ -35,5 +36,6 @@ public class JBossNamespaceHandler extends NamespaceHandlerSupport {
         registerBeanDefinitionParser("mbean-server", new MBeanServerBeanDefinitionParser());
         registerBeanDefinitionParser("resource-adapter", new JBossJcaResourceAdapterParser());
         registerBeanDefinitionParser("activation-spec-factory", new JBossActivationSpecBeanDefinitionParser());
+        registerBeanDefinitionParser("component-scan", new CustomComponentScanBeanDefinition());
     }
 }

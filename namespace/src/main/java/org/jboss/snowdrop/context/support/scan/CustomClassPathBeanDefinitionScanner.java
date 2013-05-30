@@ -1,15 +1,15 @@
-package org.jboss.spring.deployers.as7;
+package org.jboss.snowdrop.context.support.scan;
 
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.DotName;
 import org.jboss.jandex.Index;
+import org.jboss.spring.deployers.as7.SpringDeployment;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.BeanDefinitionHolder;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.support.GenericBeanDefinition;
 import org.springframework.context.annotation.ClassPathBeanDefinitionScanner;
-import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.ResourcePatternResolver;
 
@@ -19,7 +19,6 @@ import java.util.List;
 import java.util.Set;
 
 public class CustomClassPathBeanDefinitionScanner extends ClassPathBeanDefinitionScanner {
-    private ClassPathScanningCandidateComponentProvider classPathScanningObject;
 
     public CustomClassPathBeanDefinitionScanner(BeanDefinitionRegistry registry, boolean useDefaultFilters) {
         super(registry);
@@ -80,19 +79,20 @@ public class CustomClassPathBeanDefinitionScanner extends ClassPathBeanDefinitio
         for (ClassInfo class1 : componentClasses) {
             String classPath = ResourcePatternResolver.CLASSPATH_URL_PREFIX +
                     resolveBasePackage(class1.toString()) + ".class";
-            System.out.println(classPathScanningObject.getResourceLoader().getClass());
-            ResourcePatternResolver resourcePatternResolver = (ResourcePatternResolver) classPathScanningObject.getResourceLoader();
+            System.out.println(this.getResourceLoader().getClass());
+            ResourcePatternResolver resourcePatternResolver = (ResourcePatternResolver) this.getResourceLoader();
             try {
                 Resource resource = resourcePatternResolver.getResource(classPath);
                 GenericBeanDefinition beanDefinition = new GenericBeanDefinition();
                 beanDefinition.setResource(resource);
-                beanDefinition.setBeanClass(Class.forName(class1.toString(), false,  classPathScanningObject.getResourceLoader().getClassLoader()));
+                beanDefinition.setBeanClass(Class.forName(class1.toString(), false,  this.getResourceLoader().getClassLoader()));
                 beanDefs.add(beanDefinition);
             } catch (ClassNotFoundException e) {
                 System.out.println(class1.toString() + " not found");
                 continue;
             }
         }
+        System.out.println("Working");
         return beanDefs;
     }
 
