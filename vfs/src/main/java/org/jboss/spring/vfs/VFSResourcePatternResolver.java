@@ -26,7 +26,6 @@ import org.springframework.core.io.ResourceLoader;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Enumeration;
 
@@ -46,28 +45,20 @@ public class VFSResourcePatternResolver extends PathMatchingResourcePatternResol
         if (locationPattern.startsWith(CLASSPATH_ALL_URL_PREFIX)) {
             locationPattern = locationPattern.substring(CLASSPATH_ALL_URL_PREFIX.length());
             String rootDirPath = determineRootDir(locationPattern);
-            try {
-                Enumeration<URL> urls = getClassLoader().getResources(rootDirPath);
-                    while (urls.hasMoreElements()) {
-                        URL url = urls.nextElement();
-                        if (url != null && !url.getProtocol().contains("vfs")) {
-                           return super.findPathMatchingResources(CLASSPATH_ALL_URL_PREFIX+locationPattern);
-                        }
-                    }
-            } catch (MalformedURLException e) {
-
+            Enumeration<URL> urls = getClassLoader().getResources(rootDirPath);
+            while (urls.hasMoreElements()) {
+                URL url = urls.nextElement();
+                if (url != null && !url.getProtocol().contains("vfs")) {
+                    return super.findPathMatchingResources(CLASSPATH_ALL_URL_PREFIX + locationPattern);
+                }
             }
             return VFSResourcePatternResolvingHelper.locateResources(locationPattern, rootDirPath, getClassLoader(), getPathMatcher(), false);
         } else if (locationPattern.startsWith(CLASSPATH_URL_PREFIX)) {
             locationPattern = locationPattern.substring(CLASSPATH_URL_PREFIX.length());
             String rootDirPath = determineRootDir(locationPattern);
-            try {
-                URL url = getClassLoader().getResource(rootDirPath);
-                if (url != null && !url.getProtocol().contains("vfs")) {
-                    return super.findPathMatchingResources(CLASSPATH_ALL_URL_PREFIX+locationPattern);
-                }
-            } catch (MalformedURLException e) {
-
+            URL url = getClassLoader().getResource(rootDirPath);
+            if (url != null && !url.getProtocol().contains("vfs")) {
+                return super.findPathMatchingResources(CLASSPATH_URL_PREFIX + locationPattern);
             }
             return VFSResourcePatternResolvingHelper.locateResources(locationPattern, rootDirPath, getClassLoader(), getPathMatcher(), true);
         } else {
