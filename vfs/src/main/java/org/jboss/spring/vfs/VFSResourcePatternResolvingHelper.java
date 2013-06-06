@@ -21,16 +21,19 @@
  */
 package org.jboss.spring.vfs;
 
+import org.jboss.logging.Logger;
+import org.jboss.vfs.VirtualFile;
+import org.springframework.core.io.Resource;
+import org.springframework.util.PathMatcher;
+
 import java.io.IOException;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.net.URL;
 import java.util.*;
-
-import org.jboss.logging.Logger;
-import org.springframework.core.io.Resource;
-import org.springframework.util.PathMatcher;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
 
 
 /**
@@ -58,10 +61,20 @@ public class VFSResourcePatternResolvingHelper {
         Enumeration<URL> urls = classLoader.getResources(rootDirPath);
         if (!oneMatchingRootOnly) {
             while (urls.hasMoreElements()) {
-                resources.addAll(getVFSResources(urls.nextElement(), subPattern, pathMatcher));
+                URL url = urls.nextElement();
+                if (url.getProtocol().contains("vfs") || !url.getPath().contains("jar")) {
+                    resources.addAll(getVFSResources(url, subPattern, pathMatcher));
+                } else {
+                    resources.addAll(getJarResources(url, subPattern, pathMatcher));
+                }
             }
         } else {
-            resources.addAll(getVFSResources(classLoader.getResource(rootDirPath), subPattern, pathMatcher));
+            URL url = classLoader.getResource(rootDirPath);
+            if (url.getProtocol().contains("vfs") || !url.getPath().contains("jar")) {
+            resources.addAll(getVFSResources(url, subPattern, pathMatcher));
+            } else {
+                resources.addAll(getJarResources(url, subPattern, pathMatcher));
+            }
         }
         return resources.toArray(new Resource[resources.size()]);
     }
@@ -78,6 +91,7 @@ public class VFSResourcePatternResolvingHelper {
     public static Set<Resource> getVFSResources(URL rootURL, String subPattern, PathMatcher pathMatcher) throws IOException {
         log.debug("Scanning url: " + rootURL + ", sub-pattern: " + subPattern);
         Object root = VFSResource.getChild(rootURL);
+        System.out.println(((VirtualFile) root).getName() + ((VirtualFile) root).getChildrenRecursively());
         String pathName = VFSUtil.invokeVfsMethod(VFSUtil.VIRTUAL_FILE_METHOD_GET_PATH_NAME, root);
         PatternVirtualFileVisitorInvocationHandler visitorInvocationHandler = new PatternVirtualFileVisitorInvocationHandler(pathName, subPattern, pathMatcher);
         Object visitor = Proxy.newProxyInstance(VFSUtil.VIRTUAL_FILE_VISITOR_CLASS.getClassLoader(),
@@ -87,6 +101,46 @@ public class VFSResourcePatternResolvingHelper {
             log.trace("Found resources: " + visitor);
         }
         return visitorInvocationHandler.getResources();
+    }
+
+    public static Set<Resource> getJarResources(URL rootURL, String subPattern, PathMatcher pathMatcher) throws IOException {
+        log.debug("Scanning url: " + rootURL + ", sub-pattern: " + subPattern);
+        String urlPath = rootURL.getFile();
+        if (urlPath.startsWith("file:")) {
+            urlPath = urlPath.substring(5);
+        }
+        int p = urlPath.indexOf('!');
+        String innerPath = "";
+        if (p > 0) {
+            innerPath = urlPath.substring(p+2);
+            urlPath = urlPath.substring(0, p);
+        }
+        String path = innerPath + subPattern;
+        return handle(urlPath, path, pathMatcher);
+    }
+
+    private static Set<Resource> handle(String urlPath, String path, PathMatcher pathMatcher) throws IOException {
+        JarFile jarFile = new JarFile(urlPath);
+        Enumeration<JarEntry> enumeration = jarFile.entries();
+        Set<Resource> resources = new HashSet<Resource>();
+        while (enumeration.hasMoreElements()) {
+            JarEntry jarEntry = enumeration.nextElement();
+            if (process(jarEntry, path, pathMatcher)){
+                JarResource resource = new JarResource(jarFile, jarEntry);
+                resources.add(resource);
+            }
+        }
+        return resources;
+    }
+
+    private static boolean process(Object obj, String path, PathMatcher pathMatcher) {
+        JarEntry entry = (JarEntry) obj;
+        String name = entry.getName();
+        if (pathMatcher.match(path, name)) {
+            return true;
+        } else {
+            return false;
+        }
     }
 
 
