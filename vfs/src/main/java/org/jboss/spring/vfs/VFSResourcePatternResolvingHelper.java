@@ -21,16 +21,19 @@
  */
 package org.jboss.spring.vfs;
 
+import org.jboss.logging.Logger;
+import org.jboss.vfs.VirtualFile;
+import org.springframework.core.io.Resource;
+import org.springframework.util.PathMatcher;
+
 import java.io.IOException;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.net.URL;
 import java.util.*;
-
-import org.jboss.logging.Logger;
-import org.springframework.core.io.Resource;
-import org.springframework.util.PathMatcher;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
 
 
 /**
@@ -58,10 +61,12 @@ public class VFSResourcePatternResolvingHelper {
         Enumeration<URL> urls = classLoader.getResources(rootDirPath);
         if (!oneMatchingRootOnly) {
             while (urls.hasMoreElements()) {
-                resources.addAll(getVFSResources(urls.nextElement(), subPattern, pathMatcher));
+                URL url = urls.nextElement();
+                resources.addAll(getVFSResources(url, subPattern, pathMatcher));
             }
         } else {
-            resources.addAll(getVFSResources(classLoader.getResource(rootDirPath), subPattern, pathMatcher));
+            URL url = classLoader.getResource(rootDirPath);
+            resources.addAll(getVFSResources(url, subPattern, pathMatcher));
         }
         return resources.toArray(new Resource[resources.size()]);
     }
@@ -78,6 +83,7 @@ public class VFSResourcePatternResolvingHelper {
     public static Set<Resource> getVFSResources(URL rootURL, String subPattern, PathMatcher pathMatcher) throws IOException {
         log.debug("Scanning url: " + rootURL + ", sub-pattern: " + subPattern);
         Object root = VFSResource.getChild(rootURL);
+        System.out.println(((VirtualFile) root).getName() + ((VirtualFile) root).getChildrenRecursively());
         String pathName = VFSUtil.invokeVfsMethod(VFSUtil.VIRTUAL_FILE_METHOD_GET_PATH_NAME, root);
         PatternVirtualFileVisitorInvocationHandler visitorInvocationHandler = new PatternVirtualFileVisitorInvocationHandler(pathName, subPattern, pathMatcher);
         Object visitor = Proxy.newProxyInstance(VFSUtil.VIRTUAL_FILE_VISITOR_CLASS.getClassLoader(),
@@ -88,7 +94,6 @@ public class VFSResourcePatternResolvingHelper {
         }
         return visitorInvocationHandler.getResources();
     }
-
 
     protected static class PatternVirtualFileVisitorInvocationHandler implements InvocationHandler {
 

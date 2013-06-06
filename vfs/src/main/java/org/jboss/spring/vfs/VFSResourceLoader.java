@@ -21,15 +21,15 @@
  */
 package org.jboss.spring.vfs;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URL;
-
 import org.springframework.core.io.AbstractResource;
 import org.springframework.core.io.DefaultResourceLoader;
 import org.springframework.core.io.Resource;
 import org.springframework.util.Assert;
+
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
 
 /**
  * VFS based ResourceLoader.
@@ -59,7 +59,11 @@ public class VFSResourceLoader extends DefaultResourceLoader {
     private Resource doGetResourceForLocation(String path) {
         URL url = getClassLoader().getResource(path);
         if (url != null) {
-            return new VFSResource(url);
+            if (url.getProtocol().contains("vfs")) {
+                return new VFSResource(url);
+            } else {
+                return super.getResource(CLASSPATH_URL_PREFIX+path);
+            }
         } else {
             return new InexistentResource(path);
         }

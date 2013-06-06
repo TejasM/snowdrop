@@ -21,12 +21,14 @@
  */
 package org.jboss.spring.vfs;
 
-import java.io.IOException;
-import java.net.URL;
-
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.web.context.support.ServletContextResourcePatternResolver;
+
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.Enumeration;
 
 /**
  * VFS based ServletContextResourcePatternResolver
@@ -43,11 +45,30 @@ public class VFSServletContextResourcePatternResolver extends ServletContextReso
         if (locationPattern.startsWith(CLASSPATH_ALL_URL_PREFIX)) {
             locationPattern = locationPattern.substring(CLASSPATH_ALL_URL_PREFIX.length());
             String rootDirPath = determineRootDir(locationPattern);
+            try {
+                Enumeration<URL> urls = getClassLoader().getResources(rootDirPath);
+                while (urls.hasMoreElements()) {
+                    URL url = urls.nextElement();
+                    if (url != null && !url.getProtocol().contains("vfs")) {
+                        return super.findPathMatchingResources(CLASSPATH_ALL_URL_PREFIX+locationPattern);
+                    }
+                }
+            } catch (MalformedURLException e) {
+
+            }
             return VFSResourcePatternResolvingHelper.locateResources(locationPattern, rootDirPath, getClassLoader(), getPathMatcher(), false);
         }
         if (locationPattern.startsWith(CLASSPATH_URL_PREFIX)) {
             locationPattern = locationPattern.substring(CLASSPATH_URL_PREFIX.length());
             String rootDirPath = determineRootDir(locationPattern);
+            try {
+                URL url = getClassLoader().getResource(rootDirPath);
+                if (url != null && !url.getProtocol().contains("vfs")) {
+                    super.findPathMatchingResources(CLASSPATH_ALL_URL_PREFIX+locationPattern);
+                }
+            } catch (MalformedURLException e) {
+
+            }
             return VFSResourcePatternResolvingHelper.locateResources(locationPattern, rootDirPath, getClassLoader(), getPathMatcher(), true);
         } else {
             return super.findPathMatchingResources(locationPattern);
