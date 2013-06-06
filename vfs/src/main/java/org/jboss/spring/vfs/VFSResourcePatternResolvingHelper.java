@@ -62,19 +62,11 @@ public class VFSResourcePatternResolvingHelper {
         if (!oneMatchingRootOnly) {
             while (urls.hasMoreElements()) {
                 URL url = urls.nextElement();
-                if (url.getProtocol().contains("vfs") || !url.getPath().contains("jar")) {
-                    resources.addAll(getVFSResources(url, subPattern, pathMatcher));
-                } else {
-                    resources.addAll(getJarResources(url, subPattern, pathMatcher));
-                }
+                resources.addAll(getVFSResources(url, subPattern, pathMatcher));
             }
         } else {
             URL url = classLoader.getResource(rootDirPath);
-            if (url.getProtocol().contains("vfs") || !url.getPath().contains("jar")) {
             resources.addAll(getVFSResources(url, subPattern, pathMatcher));
-            } else {
-                resources.addAll(getJarResources(url, subPattern, pathMatcher));
-            }
         }
         return resources.toArray(new Resource[resources.size()]);
     }
@@ -102,47 +94,6 @@ public class VFSResourcePatternResolvingHelper {
         }
         return visitorInvocationHandler.getResources();
     }
-
-    public static Set<Resource> getJarResources(URL rootURL, String subPattern, PathMatcher pathMatcher) throws IOException {
-        log.debug("Scanning url: " + rootURL + ", sub-pattern: " + subPattern);
-        String urlPath = rootURL.getFile();
-        if (urlPath.startsWith("file:")) {
-            urlPath = urlPath.substring(5);
-        }
-        int p = urlPath.indexOf('!');
-        String innerPath = "";
-        if (p > 0) {
-            innerPath = urlPath.substring(p+2);
-            urlPath = urlPath.substring(0, p);
-        }
-        String path = innerPath + subPattern;
-        return handle(urlPath, path, pathMatcher);
-    }
-
-    private static Set<Resource> handle(String urlPath, String path, PathMatcher pathMatcher) throws IOException {
-        JarFile jarFile = new JarFile(urlPath);
-        Enumeration<JarEntry> enumeration = jarFile.entries();
-        Set<Resource> resources = new HashSet<Resource>();
-        while (enumeration.hasMoreElements()) {
-            JarEntry jarEntry = enumeration.nextElement();
-            if (process(jarEntry, path, pathMatcher)){
-                JarResource resource = new JarResource(jarFile, jarEntry);
-                resources.add(resource);
-            }
-        }
-        return resources;
-    }
-
-    private static boolean process(Object obj, String path, PathMatcher pathMatcher) {
-        JarEntry entry = (JarEntry) obj;
-        String name = entry.getName();
-        if (pathMatcher.match(path, name)) {
-            return true;
-        } else {
-            return false;
-        }
-    }
-
 
     protected static class PatternVirtualFileVisitorInvocationHandler implements InvocationHandler {
 

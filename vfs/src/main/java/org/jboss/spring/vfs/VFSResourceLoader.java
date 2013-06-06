@@ -59,10 +59,10 @@ public class VFSResourceLoader extends DefaultResourceLoader {
     private Resource doGetResourceForLocation(String path) {
         URL url = getClassLoader().getResource(path);
         if (url != null) {
-            if (url.getProtocol().contains("vfs") || !url.getPath().contains("jar")) {
+            if (url.getProtocol().contains("vfs")) {
                 return new VFSResource(url);
             } else {
-                return new JarResource(url);
+                return super.getResource(CLASSPATH_URL_PREFIX+path);
             }
         } else {
             return new InexistentResource(path);
