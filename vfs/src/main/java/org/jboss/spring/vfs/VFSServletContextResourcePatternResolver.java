@@ -21,13 +21,13 @@
  */
 package org.jboss.spring.vfs;
 
-import org.springframework.core.io.Resource;
-import org.springframework.core.io.ResourceLoader;
-import org.springframework.web.context.support.ServletContextResourcePatternResolver;
-
 import java.io.IOException;
 import java.net.URL;
 import java.util.Enumeration;
+
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.ResourceLoader;
+import org.springframework.web.context.support.ServletContextResourcePatternResolver;
 
 /**
  * VFS based ServletContextResourcePatternResolver

@@ -21,15 +21,15 @@
  */
 package org.jboss.spring.vfs;
 
-import org.springframework.core.io.AbstractResource;
-import org.springframework.core.io.DefaultResourceLoader;
-import org.springframework.core.io.Resource;
-import org.springframework.util.Assert;
-
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+
+import org.springframework.core.io.AbstractResource;
+import org.springframework.core.io.DefaultResourceLoader;
+import org.springframework.core.io.Resource;
+import org.springframework.util.Assert;
 
 /**
  * VFS based ResourceLoader.
@@ -59,6 +59,8 @@ public class VFSResourceLoader extends DefaultResourceLoader {
     private Resource doGetResourceForLocation(String path) {
         URL url = getClassLoader().getResource(path);
         if (url != null) {
+            // TejasM: Snowdrop 52, 17/06/2013: With AS7+ not all files are uploaded using JBoss VFS
+            // So we check whether the url protocols are vfs or not, if not then delegate to Spring for resource loading in this case.
             if (url.getProtocol().contains("vfs")) {
                 return new VFSResource(url);
             } else {

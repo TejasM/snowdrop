@@ -61,12 +61,10 @@ public class VFSResourcePatternResolvingHelper {
         Enumeration<URL> urls = classLoader.getResources(rootDirPath);
         if (!oneMatchingRootOnly) {
             while (urls.hasMoreElements()) {
-                URL url = urls.nextElement();
-                resources.addAll(getVFSResources(url, subPattern, pathMatcher));
+                resources.addAll(getVFSResources(urls.nextElement(), subPattern, pathMatcher));
             }
         } else {
-            URL url = classLoader.getResource(rootDirPath);
-            resources.addAll(getVFSResources(url, subPattern, pathMatcher));
+            resources.addAll(getVFSResources(classLoader.getResource(rootDirPath), subPattern, pathMatcher));
         }
         return resources.toArray(new Resource[resources.size()]);
     }
@@ -83,7 +81,6 @@ public class VFSResourcePatternResolvingHelper {
     public static Set<Resource> getVFSResources(URL rootURL, String subPattern, PathMatcher pathMatcher) throws IOException {
         log.debug("Scanning url: " + rootURL + ", sub-pattern: " + subPattern);
         Object root = VFSResource.getChild(rootURL);
-        System.out.println(((VirtualFile) root).getName() + ((VirtualFile) root).getChildrenRecursively());
         String pathName = VFSUtil.invokeVfsMethod(VFSUtil.VIRTUAL_FILE_METHOD_GET_PATH_NAME, root);
         PatternVirtualFileVisitorInvocationHandler visitorInvocationHandler = new PatternVirtualFileVisitorInvocationHandler(pathName, subPattern, pathMatcher);
         Object visitor = Proxy.newProxyInstance(VFSUtil.VIRTUAL_FILE_VISITOR_CLASS.getClassLoader(),

@@ -21,18 +21,18 @@
  */
 package org.jboss.spring.vfs;
 
-import org.jboss.logging.Logger;
-import org.springframework.core.NestedIOException;
-import org.springframework.util.ReflectionUtils;
-
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URI;
 import java.net.URL;
+
+import org.jboss.logging.Logger;
+import org.springframework.core.NestedIOException;
+import org.springframework.util.ReflectionUtils;
+
 
 /**
  * @author Marius Bogoevici
