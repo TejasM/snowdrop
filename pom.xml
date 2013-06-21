@@ -480,6 +480,17 @@
             </properties>
         </profile>
         <profile>
+            <id>install</id>
+            <activation>
+                <property>
+                    <name>JBOSS_HOME</name>
+                </property>
+            </activation>
+            <modules>
+                <module>snowdrop-installer</module>
+            </modules>
+        </profile>
+        <profile>
             <id>eclipse</id>
             <build>
                 <defaultGoal>process-test-resources</defaultGoal>
