@@ -30,6 +30,12 @@
     <!-- The naming subsystem root element -->
     <xs:element name="subsystem" type="subsystem"/>
 
-    <xs:complexType name="subsystem"/>
+	<xs:complexType name="subsystem">
+		<xs:attribute name="xmlApplicationContext" default="org.springframework.context.support.ClassPathXmlApplicationContext" type="xs:string"/>
+		<!-- TODO: Implement -->
+        <xs:attribute name="annotationApplicationContext" default="org.springframework.context.annotation.AnnotationConfigApplicationContext" type="xs:string"/>
+	</xs:complexType>
+    
+    
 
 </xs:schema>

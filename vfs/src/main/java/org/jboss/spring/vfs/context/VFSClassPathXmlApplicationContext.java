@@ -21,9 +21,12 @@
  */
 package org.jboss.spring.vfs.context;
 
+import java.io.IOException;
+
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.context.ApplicationContext;
 import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.xml.XmlBeanDefinitionReader;
 import org.springframework.core.io.support.ResourcePatternResolver;
 import org.springframework.core.io.Resource;
 import org.jboss.spring.vfs.VFSResourcePatternResolver;
@@ -35,7 +38,10 @@ import org.jboss.spring.vfs.VFSResourceLoader;
  *
  * @author <a href="mailto:mariusb@redhat.com">Marius Bogoevici</a>
  */
+@SuppressWarnings("rawtypes")
 public class VFSClassPathXmlApplicationContext extends ClassPathXmlApplicationContext {
+	
+	private Resource resource;
 
     public VFSClassPathXmlApplicationContext() {
         super();
@@ -69,13 +75,14 @@ public class VFSClassPathXmlApplicationContext extends ClassPathXmlApplicationCo
         super(path, clazz);
     }
 
-    public VFSClassPathXmlApplicationContext(String[] paths, Class clazz) throws BeansException {
+    
+	public VFSClassPathXmlApplicationContext(String[] paths, Class clazz) throws BeansException {
         super(paths, clazz);
     }
 
     public VFSClassPathXmlApplicationContext(String[] paths, Class clazz, ApplicationContext parent) throws BeansException {
         super(paths, clazz, parent);
-    }
+    }    
 
     protected ResourcePatternResolver getResourcePatternResolver() {
         return new VFSResourcePatternResolver(new VFSResourceLoader(getClassLoader()));
@@ -85,5 +92,15 @@ public class VFSClassPathXmlApplicationContext extends ClassPathXmlApplicationCo
     public Resource getResource(String location) {
         return getResourcePatternResolver().getResource(location);
     }
+    
+    public void setResource(Resource resource){
+    	this.resource = resource;
+    }
+    
+    @Override
+    protected void loadBeanDefinitions(XmlBeanDefinitionReader reader) throws BeansException, IOException {
+        reader.loadBeanDefinitions(this.resource);
+    }    
+    
 }
 

@@ -22,6 +22,8 @@
 
 package org.jboss.spring.deployers.as7;
 
+import java.util.List;
+
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -32,10 +34,6 @@ import org.jboss.as.server.deployment.Phase;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceController;
-
-import java.util.List;
-
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
 /**
  * @author Marius Bogoevici
@@ -48,13 +46,13 @@ public class SpringSubsystemAdd extends AbstractBoottimeAddStepHandler {
     public static final SpringSubsystemAdd INSTANCE = new SpringSubsystemAdd();
 
     @Override
-    protected void performBoottime(OperationContext operationContext, ModelNode modelNode, ModelNode modelNode1, ServiceVerificationHandler serviceVerificationHandler, List<ServiceController<?>> serviceControllers) throws OperationFailedException {
+    protected void performBoottime(OperationContext operationContext, final ModelNode modelNode, ModelNode modelNode1, ServiceVerificationHandler serviceVerificationHandler, List<ServiceController<?>> serviceControllers) throws OperationFailedException {
         log.info("Activating Spring Deployer subsystem");
         operationContext.addStep(new AbstractDeploymentChainStep() {
             protected void execute(DeploymentProcessorTarget bootContext) {
                 bootContext.addDeploymentProcessor(Phase.STRUCTURE, Phase.STRUCTURE_JBOSS_DEPLOYMENT_STRUCTURE_DESCRIPTOR + 1, new SpringStructureProcessor());
                 bootContext.addDeploymentProcessor(Phase.PARSE, Phase.PARSE_DEPENDENCIES_MANIFEST, new SpringDependencyProcessor());
-                bootContext.addDeploymentProcessor(Phase.INSTALL, Integer.MAX_VALUE, new SpringBootstrapProcessor());
+                bootContext.addDeploymentProcessor(Phase.INSTALL, Integer.MAX_VALUE, new SpringBootstrapProcessor(modelNode.get("xmlApplicationContext").asString()));
             }
         }, OperationContext.Stage.RUNTIME);
     }

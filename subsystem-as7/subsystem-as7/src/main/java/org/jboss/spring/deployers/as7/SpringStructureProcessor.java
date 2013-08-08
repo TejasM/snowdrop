@@ -22,6 +22,9 @@
 
 package org.jboss.spring.deployers.as7;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -30,9 +33,6 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.logging.Logger;
 import org.jboss.vfs.VirtualFile;
-
-import java.util.HashSet;
-import java.util.Set;
 
 /**
  * @author Marius Bogoevici
@@ -58,12 +58,32 @@ public class SpringStructureProcessor implements DeploymentUnitProcessor {
                 springContextLocations.add(child);
                 log.debug("Found:" + child.getPathName());
             }
+            if (child.getName().endsWith("-spring.properties")) {
+                springContextLocations.add(child);
+                log.debug("Found:" + child.getPathName());
+            }
         }
 
-        if (!springContextLocations.isEmpty()) {
-            SpringDeployment springDeployment = new SpringDeployment(springContextLocations);
-            springDeployment.attachTo(deploymentUnit);
-        }
+		if (!springContextLocations.isEmpty()) {
+			SpringDeployment springDeployment = new SpringDeployment(
+					springContextLocations);
+			springDeployment.attachTo(deploymentUnit);
+
+            // Identify the Spring Version in the deployment and save it in the SpringDeployment
+			try {
+				Class.forName("org.springframework.context.annotation.AnnotationConfigApplicationContext");
+				springDeployment.setSpringVersion("3.0+");
+			} catch (Exception e) {
+				try {
+					Class.forName("org.springframework.context.support.AbstractXmlApplicationContext");
+				} catch (ClassNotFoundException e1) {
+					// TODO: what to do if neither is installed (only warn or give error?), giving warning for now.
+					log.warn("Snowdrop detected no spring module, make sure you have installed spring dependencies correctly");
+					return;
+				}
+				springDeployment.setSpringVersion("2.5");
+			}
+		}
 
     }
 
